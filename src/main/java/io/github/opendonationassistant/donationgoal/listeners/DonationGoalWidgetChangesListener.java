@@ -75,19 +75,16 @@ public class DonationGoalWidgetChangesListener {
               Optional.ofNullable(goals)
                 .orElse(List.of())
                 .stream()
-                .flatMap(config -> {
+                .map(config -> {
                   var id = (String) config.get("id");
-                  return repository
+                  Goal goal = repository
                     .getById(id)
-                    .map(found -> {
-                      var updated = found.update(widget.enabled(), config);
-                      goalSender.sendGoal(
-                        Stage.FINALIZED,
-                        updated.asUpdatedGoal()
-                      );
-                      return updated.save();
-                    })
-                    .stream();
+                    .orElseGet(() ->
+                      repository.create(widget.ownerId(), widget.id())
+                    );
+                  var updated = goal.update(widget.enabled(), config);
+                  goalSender.sendGoal(Stage.FINALIZED, updated.asUpdatedGoal());
+                  return updated.save();
                 })
                 .toList()
             );

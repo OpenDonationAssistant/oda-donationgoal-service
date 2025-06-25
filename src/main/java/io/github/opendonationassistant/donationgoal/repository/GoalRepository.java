@@ -1,5 +1,7 @@
 package io.github.opendonationassistant.donationgoal.repository;
 
+import com.fasterxml.uuid.Generators;
+import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.events.goal.GoalCommandSender;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -19,6 +21,24 @@ public class GoalRepository {
   ) {
     this.dataRepository = dataRepository;
     this.commandSender = commandSender;
+  }
+
+  public Goal create(String recipientId, String widgetId) {
+    return new Goal(
+      new GoalData(
+        Generators.timeBasedEpochGenerator().generate().toString(),
+        recipientId,
+        widgetId,
+        "",
+        "",
+        new Amount(100, 0, "RUB"),
+        new Amount(100, 0, "RUB"),
+        true,
+        false
+      ),
+      commandSender,
+      dataRepository
+    );
   }
 
   public List<Goal> list(String recipientId) {
