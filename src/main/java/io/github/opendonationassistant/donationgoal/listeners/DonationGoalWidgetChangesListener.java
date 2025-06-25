@@ -5,6 +5,9 @@ import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
 import io.github.opendonationassistant.events.config.ConfigPutCommand;
+import io.github.opendonationassistant.events.goal.GoalSender;
+import io.github.opendonationassistant.events.goal.GoalSender.Stage;
+import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetChangedEvent;
 import io.micronaut.rabbitmq.annotation.Queue;
@@ -23,14 +26,17 @@ public class DonationGoalWidgetChangesListener {
   private final ODALogger log = new ODALogger(this);
   private final GoalRepository repository;
   private final ConfigCommandSender configCommandSender;
+  private final GoalSender goalSender;
 
   @Inject
   public DonationGoalWidgetChangesListener(
     GoalRepository repository,
-    ConfigCommandSender configCommandSender
+    ConfigCommandSender configCommandSender,
+    GoalSender goalSender
   ) {
     this.repository = repository;
     this.configCommandSender = configCommandSender;
+    this.goalSender = goalSender;
   }
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Configs.GOAL)
@@ -73,8 +79,14 @@ public class DonationGoalWidgetChangesListener {
                   var id = (String) config.get("id");
                   return repository
                     .getById(id)
-                    .map(found -> found.update(widget.enabled(), config))
-                    .map(found -> found.save())
+                    .map(found -> {
+                      var updated = found.update(widget.enabled(), config);
+                      goalSender.sendGoal(
+                        Stage.FINALIZED,
+                        updated.asUpdatedGoal()
+                      );
+                      return updated.save();
+                    })
                     .stream();
                 })
                 .toList()

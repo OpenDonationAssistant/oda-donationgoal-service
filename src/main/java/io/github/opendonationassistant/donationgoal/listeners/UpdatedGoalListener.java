@@ -7,6 +7,8 @@ import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
 import io.github.opendonationassistant.events.config.ConfigPutCommand;
 import io.github.opendonationassistant.events.goal.GoalCommandSender;
+import io.github.opendonationassistant.events.goal.GoalSender;
+import io.github.opendonationassistant.events.goal.GoalSender.Stage;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.github.opendonationassistant.events.widget.WidgetCommandSender;
 import io.github.opendonationassistant.events.widget.WidgetConfig;
@@ -26,6 +28,7 @@ public class UpdatedGoalListener {
   private final WidgetCommandSender widgetCommandSender;
   private final GoalRepository repository;
   private final GoalDataRepository dataRepository;
+  private final GoalSender goalSender;
 
   @Inject
   public UpdatedGoalListener(
@@ -33,13 +36,15 @@ public class UpdatedGoalListener {
     GoalCommandSender goalCommandSender,
     WidgetCommandSender widgetCommandSender,
     GoalRepository repository,
-    GoalDataRepository dataRepository
+    GoalDataRepository dataRepository,
+    GoalSender goalSender
   ) {
     this.configCommandSender = configCommandSender;
     this.goalCommandSender = goalCommandSender;
     this.widgetCommandSender = widgetCommandSender;
     this.repository = repository;
     this.dataRepository = dataRepository;
+    this.goalSender = goalSender;
   }
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.FINISHED)
@@ -96,5 +101,8 @@ public class UpdatedGoalListener {
     );
     var patch = new WidgetConfig(List.of(goals));
     widgetCommandSender.send(new WidgetUpdateCommand(update.widgetId(), patch));
+
+    // обновление для history-service
+    goalSender.sendGoal(Stage.FINALIZED, update);
   }
 }
