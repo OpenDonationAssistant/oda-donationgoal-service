@@ -1,0 +1,27 @@
+micronaut:
+  application:
+    name: oda-donationgoal-service
+  security:
+    authentication: bearer
+    token:
+      bearer:
+        enabled: true
+      cookie:
+        enabled: true
+      jwt:
+        signatures:
+          jwks:
+            keycloak:
+              url: https://auth.oda.digital/realms/ODA/protocol/openid-connect/certs
+endpoints:
+  flyway:
+    enabled: true
+flyway:
+  datasources:
+    default:
+      enabled: true
+      baseline-on-migrate: true
+jpa:
+  default:
+    entity-scan:
+        packages: 'io.github.opendonationassistant'

@@ -1,0 +1,4 @@
+datasources:
+  default:
+    driverClassName: 'org.postgresql.Driver'
+    db-type: "postgresql"
