@@ -100,7 +100,12 @@ public class DonationGoalWidgetChangesListener {
       .toList();
 
     configCommandSender.send(
-      new ConfigPutCommand(widget.ownerId(), "paymentpage", "goals", savedGoals)
+      new ConfigPutCommand(
+        widget.ownerId(),
+        "paymentpage",
+        "goals",
+        savedGoals.stream().map(Goal::data).toList()
+      )
     );
   }
 }

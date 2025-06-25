@@ -63,6 +63,7 @@ public class UpdatedGoalListener {
 
     List<Goal> savedGoals = repository.list(update.recipientId());
 
+    // обновление конфига страницы
     configCommandSender.send(
       new ConfigPutCommand(
         update.recipientId(),
@@ -72,6 +73,7 @@ public class UpdatedGoalListener {
       )
     );
 
+    // обновление настроек виджета
     var goals = new WidgetProperty(
       "goal",
       "Цель",
@@ -94,10 +96,5 @@ public class UpdatedGoalListener {
     );
     var patch = new WidgetConfig(List.of(goals));
     widgetCommandSender.send(new WidgetUpdateCommand(update.widgetId(), patch));
-
-    goalCommandSender.send(
-      "%sgoal".formatted(update.recipientId()),
-      updated.asGoalCommand()
-    );
   }
 }
