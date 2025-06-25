@@ -2,7 +2,7 @@
 <configuration>
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>{"timestamp":"%d{HH:mm:ss.SSS}","level":"%level","logger":"%logger","context":[%X{context}],"errors":[%X{error}],"message": "%replace(%replace(%msg){'\"','\\"'}){'\n',\" \"}"}%n</pattern>
+      <pattern>{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","logger":"%logger","context":[%X{context}],"errors":[%X{error}],"message": "%replace(%replace(%msg){'\"','\\"'}){'\n',\" \"}"}%n</pattern>
     </encoder>
   </appender>
   <logger name="org.flywaydb.core" level="WARN"/>
