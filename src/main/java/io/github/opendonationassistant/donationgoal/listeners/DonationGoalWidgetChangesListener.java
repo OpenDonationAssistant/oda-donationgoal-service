@@ -77,12 +77,10 @@ public class DonationGoalWidgetChangesListener {
                 .stream()
                 .map(config -> {
                   var id = (String) config.get("id");
-                  Goal goal = repository
+                  Goal updated = repository
                     .getById(id)
-                    .orElseGet(() ->
-                      repository.create(widget.ownerId(), widget.id())
-                    );
-                  var updated = goal.update(widget.enabled(), config);
+                    .orElseGet(() -> repository.create(widget.ownerId(), widget.id()))
+                    .update(widget.enabled(), config);
                   goalSender.sendGoal(Stage.FINALIZED, updated.asUpdatedGoal());
                   return updated.save();
                 })

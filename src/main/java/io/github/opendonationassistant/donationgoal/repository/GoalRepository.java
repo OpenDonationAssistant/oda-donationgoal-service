@@ -24,21 +24,19 @@ public class GoalRepository {
   }
 
   public Goal create(String recipientId, String widgetId) {
-    return new Goal(
-      new GoalData(
-        Generators.timeBasedEpochGenerator().generate().toString(),
-        recipientId,
-        widgetId,
-        "",
-        "",
-        new Amount(100, 0, "RUB"),
-        new Amount(100, 0, "RUB"),
-        true,
-        false
-      ),
-      commandSender,
-      dataRepository
+    var data = new GoalData(
+      Generators.timeBasedEpochGenerator().generate().toString(),
+      recipientId,
+      widgetId,
+      "",
+      "",
+      new Amount(100, 0, "RUB"),
+      new Amount(100, 0, "RUB"),
+      true,
+      false
     );
+    dataRepository.save(data);
+    return new Goal(data, commandSender, dataRepository);
   }
 
   public List<Goal> list(String recipientId) {
