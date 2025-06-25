@@ -74,6 +74,7 @@ public class DonationGoalWidgetChangesListener {
                   return repository
                     .getById(id)
                     .map(found -> found.update(widget.enabled(), config))
+                    .map(found -> found.save())
                     .stream();
                 })
                 .toList()
