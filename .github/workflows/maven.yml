@@ -28,15 +28,6 @@ jobs:
     - name: Build service
       run: mvn -B -q clean package -Dpackaging=native-image -DskipTests
 
-    - run: npm install
-      working-directory: "target/generated-sources/openapi/"
-
-    - uses: JS-DevTools/npm-publish@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        registry: "https://npm.pkg.github.com"
-        package: "target/generated-sources/openapi/"
-
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
