@@ -23,9 +23,11 @@ public class GoalRepository {
     this.commandSender = commandSender;
   }
 
-  public Goal create(String recipientId, String widgetId) {
+  public Goal create(String recipientId, String widgetId, String id) {
     var data = new GoalData(
-      Generators.timeBasedEpochGenerator().generate().toString(),
+      Optional.ofNullable(id).orElseGet(() ->
+        Generators.timeBasedEpochGenerator().generate().toString()
+      ),
       recipientId,
       widgetId,
       "",

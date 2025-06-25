@@ -79,7 +79,7 @@ public class DonationGoalWidgetChangesListener {
                   var id = (String) config.get("id");
                   Goal updated = repository
                     .getById(id)
-                    .orElseGet(() -> repository.create(widget.ownerId(), widget.id()))
+                    .orElseGet(() -> repository.create(widget.ownerId(), widget.id(), id))
                     .update(widget.enabled(), config);
                   goalSender.sendGoal(Stage.FINALIZED, updated.asUpdatedGoal());
                   return updated.save();
