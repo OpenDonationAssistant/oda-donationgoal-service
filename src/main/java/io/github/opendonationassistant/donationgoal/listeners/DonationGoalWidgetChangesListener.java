@@ -79,7 +79,9 @@ public class DonationGoalWidgetChangesListener {
                   var id = (String) config.get("id");
                   Goal updated = repository
                     .getById(id)
-                    .orElseGet(() -> repository.create(widget.ownerId(), widget.id(), id))
+                    .orElseGet(() ->
+                      repository.create(widget.ownerId(), widget.id(), id)
+                    )
                     .update(widget.enabled(), config);
                   goalSender.sendGoal(Stage.FINALIZED, updated.asUpdatedGoal());
                   return updated.save();
@@ -88,24 +90,31 @@ public class DonationGoalWidgetChangesListener {
             );
           }
         });
+
       savedGoals
         .stream()
         .filter(goal -> widget.id().equals(goal.id()))
-        .filter(goal ->
-          updatedGoals
+        .filter(goal -> {
+          var result = updatedGoals
             .stream()
             .filter(updated -> updated.id().equals(goal.id()))
             .findAny()
-            .isEmpty()
-        )
+            .isEmpty();
+          log.info(
+            "Checking goal for deletion",
+            Map.of("goal", goal, "updatedGoals", updatedGoals, "result", result)
+          );
+          return result;
+        })
         .forEach(Goal::delete);
     }
 
-    savedGoals = repository
-      .list(widget.ownerId())
-      .stream()
-      .filter(goal -> goal.isEnabled())
-      .toList();
+    savedGoals = repository.list(widget.ownerId());
+    log.info(
+      "Reload all goals",
+      Map.of("recipientId", widget.ownerId(), "goals", savedGoals)
+    );
+    savedGoals = savedGoals.stream().filter(goal -> goal.isEnabled()).toList();
 
     configCommandSender.send(
       new ConfigPutCommand(

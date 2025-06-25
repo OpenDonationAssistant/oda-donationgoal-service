@@ -102,6 +102,13 @@ public class UpdatedGoalListener {
     var patch = new WidgetConfig(List.of(goals));
     widgetCommandSender.send(new WidgetUpdateCommand(update.widgetId(), patch));
 
+    // TODO: send 1 message instead of 3 ( maybe use WidgetChangedNotification)
+    // TODO: reload would be done without it, is it needed?
+    goalCommandSender.send(
+      "%sgoal".formatted(update.recipientId()),
+      updated.asGoalCommand()
+    );
+
     // обновление для history-service
     goalSender.sendGoal(Stage.FINALIZED, update);
   }
