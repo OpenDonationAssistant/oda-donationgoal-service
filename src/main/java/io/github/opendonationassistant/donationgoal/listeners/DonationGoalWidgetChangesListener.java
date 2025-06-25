@@ -95,7 +95,7 @@ public class DonationGoalWidgetChangesListener {
           updatedGoals
             .stream()
             .filter(updated -> updated.id().equals(goal.id()))
-            .findFirst()
+            .findAny()
             .isEmpty()
         )
         .forEach(Goal::delete);

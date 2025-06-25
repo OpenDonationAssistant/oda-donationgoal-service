@@ -88,7 +88,7 @@ public class Goal {
 
   public void delete() {
     log.info("Deleting goal", Map.of("goal", this.data));
-    repository.delete(this.data);
+    repository.deleteById(this.data.id());
   }
 
   public UpdatedGoal asUpdatedGoal() {
