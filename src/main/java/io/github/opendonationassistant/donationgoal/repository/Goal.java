@@ -10,6 +10,8 @@ import io.micronaut.serde.annotation.Serdeable;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Serdeable
 public class Goal {
 
@@ -144,6 +146,7 @@ public class Goal {
     return this.data.enabled();
   }
 
+  @JsonProperty("data")
   public GoalData data(){
     return this.data;
   }

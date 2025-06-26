@@ -61,6 +61,7 @@ public class DonationGoalWidgetChangesListener {
     }
 
     List<Goal> savedGoals = repository.list(widget.ownerId());
+    log.info("Loaded existing goals", Map.of("goals", savedGoals));
 
     if ("updated".equals(event.type()) || "toggled".equals(event.type())) {
       List<Goal> updatedGoals = new ArrayList<>();
@@ -90,6 +91,7 @@ public class DonationGoalWidgetChangesListener {
             );
           }
         });
+      log.info("Configuration changed", Map.of("goals", updatedGoals));
 
       savedGoals
         .stream()
