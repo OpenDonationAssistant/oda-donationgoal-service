@@ -18,7 +18,7 @@ public record GoalData(
   Amount accumulatedAmount,
   Amount requiredAmount,
   Boolean enabled,
-  @MappedProperty("isDefault") Boolean isDefault
+  @MappedProperty("isdefault") Boolean isDefault
 ) {
   public GoalData withAccumulatedAmount(Amount amount) {
     return new GoalData(
