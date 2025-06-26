@@ -1,5 +1,6 @@
 package io.github.opendonationassistant.donationgoal.repository;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.events.CompletedPaymentNotification;
@@ -9,8 +10,6 @@ import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.micronaut.serde.annotation.Serdeable;
 import java.util.Map;
 import java.util.Optional;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Serdeable
 public class Goal {
@@ -122,15 +121,15 @@ public class Goal {
       "id",
       this.data.id(),
       "briefDescription",
-      this.data.briefDescription(),
+      Optional.ofNullable(this.data.briefDescription()).orElse(""),
       "fullDescription",
-      this.data.fullDescription(),
+      Optional.ofNullable(this.data.fullDescription()).orElse(""),
       "accumulatedAmount",
       this.data.accumulatedAmount(),
       "requiredAmount",
       this.data.requiredAmount(),
       "default",
-      this.data.isDefault()
+      Optional.ofNullable(this.data.isDefault()).orElse(false)
     );
   }
 
@@ -147,7 +146,7 @@ public class Goal {
   }
 
   @JsonProperty("data")
-  public GoalData data(){
+  public GoalData data() {
     return this.data;
   }
 }
