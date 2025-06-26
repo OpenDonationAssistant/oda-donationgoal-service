@@ -1,5 +1,6 @@
 package io.github.opendonationassistant.donationgoal.listeners;
 
+import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
@@ -19,10 +20,12 @@ import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RabbitListener
 public class UpdatedGoalListener {
 
+  private final ODALogger log = new ODALogger(this);
   private final ConfigCommandSender configCommandSender;
   private final GoalCommandSender goalCommandSender;
   private final WidgetCommandSender widgetCommandSender;
@@ -104,10 +107,11 @@ public class UpdatedGoalListener {
 
     // TODO: send 1 message instead of 3 ( maybe use WidgetChangedNotification)
     // TODO: reload would be done without it, is it needed?
-    goalCommandSender.send(
-      "%sgoal".formatted(update.recipientId()),
-      updated.asGoalCommand()
+    log.info(
+      "Send GoalCommand",
+      Map.of("command", updated.asGoalCommand(), "update", update)
     );
+    goalCommandSender.send(update.recipientId(), updated.asGoalCommand());
 
     // обновление для history-service
     goalSender.sendGoal(Stage.FINALIZED, update);
