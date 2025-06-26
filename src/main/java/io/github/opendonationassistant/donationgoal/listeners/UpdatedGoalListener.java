@@ -15,6 +15,7 @@ import io.github.opendonationassistant.events.widget.WidgetCommandSender;
 import io.github.opendonationassistant.events.widget.WidgetConfig;
 import io.github.opendonationassistant.events.widget.WidgetProperty;
 import io.github.opendonationassistant.events.widget.WidgetUpdateCommand;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.inject.Inject;
@@ -50,7 +51,7 @@ public class UpdatedGoalListener {
     this.goalSender = goalSender;
   }
 
-  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.FINISHED)
+  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.CALCULATED)
   public void listen(UpdatedGoal update) {
     var updated = new Goal(
       new GoalData(
@@ -70,17 +71,6 @@ public class UpdatedGoalListener {
     updated.save();
 
     List<Goal> savedGoals = repository.list(update.recipientId());
-
-    // обновление конфига страницы
-    configCommandSender.send(
-      new ConfigPutCommand(
-        update.recipientId(),
-        "paymentpage",
-        "goals",
-        savedGoals.stream().map(Goal::data).toList()
-      )
-    );
-
     // обновление настроек виджета
     var goals = new WidgetProperty(
       "goal",
@@ -105,15 +95,57 @@ public class UpdatedGoalListener {
     var patch = new WidgetConfig(List.of(goals));
     widgetCommandSender.send(new WidgetUpdateCommand(update.widgetId(), patch));
 
+    goalSender.sendGoal(Stage.SYNCED, update);
+  }
+
+  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.FINISHED)
+  public void listenFinished(UpdatedGoal update) {
+    var updated = new Goal(
+      new GoalData(
+        update.goalId(),
+        update.recipientId(),
+        update.widgetId(),
+        update.briefDescription(),
+        update.fullDescription(),
+        update.accumulatedAmount(),
+        update.requiredAmount(),
+        true, // TODO: раз прилетел апдейт, сначит донатгол активный
+        update.isDefault()
+      ),
+      goalCommandSender,
+      dataRepository
+    );
+    List<Goal> savedGoals = repository.list(update.recipientId());
+    log.info(
+      "Reload all goals",
+      Map.of("recipientId", update.recipientId(), "goals", savedGoals)
+    );
+    savedGoals = savedGoals.stream().filter(goal -> goal.isEnabled()).toList();
+
+    // обновление конфига страницы
+    configCommandSender.send(
+      new ConfigPutCommand(
+        update.recipientId(),
+        "paymentpage",
+        "goals",
+        savedGoals.stream().map(Goal::data).toList()
+      )
+    );
+
     // TODO: send 1 message instead of 3 ( maybe use WidgetChangedNotification)
     // TODO: reload would be done without it, is it needed?
     log.info(
       "Send GoalCommand",
       Map.of("command", updated.asGoalCommand(), "update", update)
     );
-    goalCommandSender.sendGoalCommand(update.recipientId(), updated.asGoalCommand());
+    goalCommandSender.sendGoalCommand(
+      update.recipientId(),
+      updated.asGoalCommand()
+    );
 
     // обновление для history-service
-    goalSender.sendGoal(Stage.FINALIZED, update);
+    if (!StringUtils.isEmpty(update.goalId())) {
+      goalSender.sendGoal(Stage.FINALIZED, update);
+    }
   }
 }

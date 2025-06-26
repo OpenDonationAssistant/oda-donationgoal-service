@@ -1,5 +1,6 @@
 package io.github.opendonationassistant.donationgoal.listeners;
 
+import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
@@ -84,7 +85,8 @@ public class DonationGoalWidgetChangesListener {
                       repository.create(widget.ownerId(), widget.id(), id)
                     )
                     .update(widget.enabled(), config);
-                  goalSender.sendGoal(Stage.FINALIZED, updated.asUpdatedGoal());
+                  // TODO: batch
+                  goalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
                   return updated.save();
                 })
                 .toList()
@@ -109,22 +111,20 @@ public class DonationGoalWidgetChangesListener {
           return result;
         })
         .forEach(Goal::delete);
+
+      goalSender.sendGoal(
+        Stage.SYNCED,
+        new UpdatedGoal(
+          "",
+          widget.id(),
+          widget.ownerId(),
+          "",
+          "",
+          new Amount(0, 0, "RUB"),
+          new Amount(0, 0, "RUB"),
+          false
+        )
+      );
     }
-
-    savedGoals = repository.list(widget.ownerId());
-    log.info(
-      "Reload all goals",
-      Map.of("recipientId", widget.ownerId(), "goals", savedGoals)
-    );
-    savedGoals = savedGoals.stream().filter(goal -> goal.isEnabled()).toList();
-
-    configCommandSender.send(
-      new ConfigPutCommand(
-        widget.ownerId(),
-        "paymentpage",
-        "goals",
-        savedGoals.stream().map(Goal::data).toList()
-      )
-    );
   }
 }

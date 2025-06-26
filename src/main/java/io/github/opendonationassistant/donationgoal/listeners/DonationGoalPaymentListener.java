@@ -31,7 +31,7 @@ public class DonationGoalPaymentListener {
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Payments.GOAL)
   public void listen(CompletedPaymentNotification payment) {
-    log.info("Handling payment", Map.of("payment", payment));
+    log.info("Received payment", Map.of("payment", payment));
 
     Optional.ofNullable(payment.goal())
       .flatMap(repository::getById)
