@@ -1,5 +1,6 @@
 package io.github.opendonationassistant.donationgoal.repository;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
@@ -145,7 +146,7 @@ public class Goal {
     return this.data.enabled();
   }
 
-  @JsonProperty("data")
+  @JsonGetter("data")
   public GoalData data() {
     return this.data;
   }

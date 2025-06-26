@@ -2,15 +2,18 @@ package io.github.opendonationassistant.donationgoal.repository;
 
 import com.fasterxml.uuid.Generators;
 import io.github.opendonationassistant.commons.Amount;
+import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.events.goal.GoalCommandSender;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Singleton
 public class GoalRepository {
 
+  private final ODALogger log = new ODALogger(this);
   private final GoalDataRepository dataRepository;
   private final GoalCommandSender commandSender;
 
@@ -24,6 +27,7 @@ public class GoalRepository {
   }
 
   public Goal create(String recipientId, String widgetId, String id) {
+    log.info("Create Goal", Map.of("recipientId", recipientId, "widgetId", widgetId, "id",id));
     var data = new GoalData(
       Optional.ofNullable(id).orElseGet(() ->
         Generators.timeBasedEpochGenerator().generate().toString()

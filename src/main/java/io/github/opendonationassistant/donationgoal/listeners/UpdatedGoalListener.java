@@ -111,7 +111,7 @@ public class UpdatedGoalListener {
       "Send GoalCommand",
       Map.of("command", updated.asGoalCommand(), "update", update)
     );
-    goalCommandSender.send(update.recipientId(), updated.asGoalCommand());
+    goalCommandSender.sendGoalCommand(update.recipientId(), updated.asGoalCommand());
 
     // обновление для history-service
     goalSender.sendGoal(Stage.FINALIZED, update);
