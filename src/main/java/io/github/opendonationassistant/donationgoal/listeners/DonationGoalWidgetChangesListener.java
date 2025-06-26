@@ -93,7 +93,7 @@ public class DonationGoalWidgetChangesListener {
 
       savedGoals
         .stream()
-        .filter(goal -> widget.id().equals(goal.id()))
+        .filter(goal -> widget.id().equals(goal.widgetId()))
         .filter(goal -> {
           var result = updatedGoals
             .stream()
