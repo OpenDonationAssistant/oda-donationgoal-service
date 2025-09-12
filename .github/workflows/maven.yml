@@ -9,7 +9,7 @@ permissions: write-all
 jobs:
 
   build-and-deploy:
-    uses: 'OpenDonationAssistant/oda-k3s-specs/.github/workflows/release_service.yml@main'
+    uses: "OpenDonationAssistant/oda-libraries/.github/workflows/release_service.yml@master"
     secrets: inherit
     with:
       service: donationgoal-service
