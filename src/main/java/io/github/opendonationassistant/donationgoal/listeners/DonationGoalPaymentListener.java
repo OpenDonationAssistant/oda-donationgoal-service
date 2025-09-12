@@ -35,8 +35,17 @@ public class DonationGoalPaymentListener {
 
     Optional.ofNullable(payment.goal())
       .flatMap(repository::getById)
+      .or(() -> findDefaultGoal(payment.recipientId()))
       .map(goal -> goal.handlePayment(payment))
       .map(Goal::asUpdatedGoal)
       .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
+  }
+
+  private Optional<Goal> findDefaultGoal(String recipientId) {
+    return repository
+      .list(recipientId)
+      .stream()
+      .filter(goal -> goal.data().isDefault())
+      .findFirst();
   }
 }

@@ -9,8 +9,9 @@ permissions: write-all
 jobs:
 
   build-and-deploy:
-    uses: 'OpenDonationAssistant/oda-k3s-specs/.github/workflows/build_and_deploy_native_with_client_package.yml@main'
+    uses: 'OpenDonationAssistant/oda-k3s-specs/.github/workflows/release_service.yml@main'
     secrets: inherit
     with:
       service: donationgoal-service
       version: '${{ github.RUN_NUMBER }}'
+      npm: false

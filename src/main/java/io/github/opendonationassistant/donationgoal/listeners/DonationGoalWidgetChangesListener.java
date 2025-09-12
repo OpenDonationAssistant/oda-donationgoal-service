@@ -5,7 +5,6 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
-import io.github.opendonationassistant.events.config.ConfigPutCommand;
 import io.github.opendonationassistant.events.goal.GoalSender;
 import io.github.opendonationassistant.events.goal.GoalSender.Stage;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
