@@ -27,7 +27,10 @@ public class GoalRepository {
   }
 
   public Goal create(String recipientId, String widgetId, String id) {
-    log.info("Create Goal", Map.of("recipientId", recipientId, "widgetId", widgetId, "id",id));
+    log.info(
+      "Create Goal",
+      Map.of("recipientId", recipientId, "widgetId", widgetId, "id", id)
+    );
     var data = new GoalData(
       Optional.ofNullable(id).orElseGet(() ->
         Generators.timeBasedEpochGenerator().generate().toString()
