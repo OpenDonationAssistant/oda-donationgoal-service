@@ -5,9 +5,9 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
-import io.github.opendonationassistant.events.goal.GoalSender;
-import io.github.opendonationassistant.events.goal.GoalSender.Stage;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
+import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
+import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
 import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetChangedEvent;
 import io.micronaut.rabbitmq.annotation.Queue;
@@ -19,24 +19,24 @@ import java.util.Map;
 import java.util.Optional;
 
 @RabbitListener
-public class DonationGoalWidgetChangesListener {
+public class ConfigListener {
 
   private static final String WIDGET_TYPE = "donationgoal";
 
   private final ODALogger log = new ODALogger(this);
   private final GoalRepository repository;
   private final ConfigCommandSender configCommandSender;
-  private final GoalSender goalSender;
+  private final UpdatedGoalSender updatedGoalSender;
 
   @Inject
-  public DonationGoalWidgetChangesListener(
+  public ConfigListener(
     GoalRepository repository,
     ConfigCommandSender configCommandSender,
-    GoalSender goalSender
+    UpdatedGoalSender updatedGoalSender
   ) {
     this.repository = repository;
     this.configCommandSender = configCommandSender;
-    this.goalSender = goalSender;
+    this.updatedGoalSender = updatedGoalSender;
   }
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Configs.GOAL)
@@ -85,7 +85,7 @@ public class DonationGoalWidgetChangesListener {
                     )
                     .update(widget.enabled(), config);
                   // TODO: batch
-                  goalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
+                  updatedGoalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
                   return updated.save();
                 })
                 .toList()
@@ -111,7 +111,7 @@ public class DonationGoalWidgetChangesListener {
         })
         .forEach(Goal::delete);
 
-      goalSender.sendGoal(
+      updatedGoalSender.sendGoal(
         Stage.SYNCED,
         new UpdatedGoal(
           "",

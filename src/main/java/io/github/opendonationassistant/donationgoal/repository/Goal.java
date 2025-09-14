@@ -1,12 +1,11 @@
 package io.github.opendonationassistant.donationgoal.repository;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.events.CompletedPaymentNotification;
-import io.github.opendonationassistant.events.goal.GoalCommand;
-import io.github.opendonationassistant.events.goal.GoalCommandSender;
+import io.github.opendonationassistant.events.goal.GoalWidgetCommand;
+import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.micronaut.serde.annotation.Serdeable;
 import java.util.Map;
@@ -17,13 +16,13 @@ public class Goal {
 
   private final ODALogger log = new ODALogger(this);
 
-  private final GoalCommandSender commandSender;
+  private final GoalWidgetCommandSender commandSender;
   private final GoalDataRepository repository;
   private GoalData data;
 
   public Goal(
     GoalData data,
-    GoalCommandSender commandSender,
+    GoalWidgetCommandSender commandSender,
     GoalDataRepository repository
   ) {
     this.commandSender = commandSender;
@@ -38,6 +37,21 @@ public class Goal {
       this.data.withAccumulatedAmount(
           new Amount(
             oldAmount.getMajor() + paid,
+            oldAmount.getMinor(),
+            oldAmount.getCurrency()
+          )
+        ),
+      commandSender,
+      repository
+    );
+  }
+
+  public Goal add(Amount amount) {
+    var oldAmount = this.data.accumulatedAmount();
+    return new Goal(
+      this.data.withAccumulatedAmount(
+          new Amount(
+            oldAmount.getMajor() + amount.getMajor(),
             oldAmount.getMinor(),
             oldAmount.getCurrency()
           )
@@ -106,8 +120,8 @@ public class Goal {
     );
   }
 
-  public GoalCommand asGoalCommand() {
-    return new GoalCommand(
+  public GoalWidgetCommand asGoalCommand() {
+    return new GoalWidgetCommand(
       "update",
       this.data.id(),
       this.data.fullDescription(),

@@ -7,10 +7,10 @@ import io.github.opendonationassistant.donationgoal.repository.GoalDataRepositor
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
 import io.github.opendonationassistant.events.config.ConfigPutCommand;
-import io.github.opendonationassistant.events.goal.GoalCommandSender;
-import io.github.opendonationassistant.events.goal.GoalSender;
-import io.github.opendonationassistant.events.goal.GoalSender.Stage;
+import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
+import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
+import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
 import io.github.opendonationassistant.events.widget.WidgetCommandSender;
 import io.github.opendonationassistant.events.widget.WidgetConfig;
 import io.github.opendonationassistant.events.widget.WidgetProperty;
@@ -24,24 +24,24 @@ import java.util.List;
 import java.util.Map;
 
 @RabbitListener
-public class UpdatedGoalListener {
+public class GoalListener {
 
   private final ODALogger log = new ODALogger(this);
   private final ConfigCommandSender configCommandSender;
-  private final GoalCommandSender goalCommandSender;
+  private final GoalWidgetCommandSender goalCommandSender;
   private final WidgetCommandSender widgetCommandSender;
   private final GoalRepository repository;
   private final GoalDataRepository dataRepository;
-  private final GoalSender goalSender;
+  private final UpdatedGoalSender goalSender;
 
   @Inject
-  public UpdatedGoalListener(
+  public GoalListener(
     ConfigCommandSender configCommandSender,
-    GoalCommandSender goalCommandSender,
+    GoalWidgetCommandSender goalCommandSender,
     WidgetCommandSender widgetCommandSender,
     GoalRepository repository,
     GoalDataRepository dataRepository,
-    GoalSender goalSender
+    UpdatedGoalSender goalSender
   ) {
     this.configCommandSender = configCommandSender;
     this.goalCommandSender = goalCommandSender;

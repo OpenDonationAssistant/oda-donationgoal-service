@@ -3,7 +3,7 @@ package io.github.opendonationassistant.donationgoal.repository;
 import com.fasterxml.uuid.Generators;
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.events.goal.GoalCommandSender;
+import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
@@ -15,12 +15,12 @@ public class GoalRepository {
 
   private final ODALogger log = new ODALogger(this);
   private final GoalDataRepository dataRepository;
-  private final GoalCommandSender commandSender;
+  private final GoalWidgetCommandSender commandSender;
 
   @Inject
   public GoalRepository(
     GoalDataRepository dataRepository,
-    GoalCommandSender commandSender
+    GoalWidgetCommandSender commandSender
   ) {
     this.dataRepository = dataRepository;
     this.commandSender = commandSender;

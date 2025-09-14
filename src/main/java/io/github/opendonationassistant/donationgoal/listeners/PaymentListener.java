@@ -1,11 +1,10 @@
 package io.github.opendonationassistant.donationgoal.listeners;
 
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.CompletedPaymentNotification;
-import io.github.opendonationassistant.events.goal.GoalSender;
-import io.github.opendonationassistant.events.goal.GoalSender.Stage;
+import io.github.opendonationassistant.events.goal.GoalFacade;
+import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.inject.Inject;
@@ -13,20 +12,17 @@ import java.util.Map;
 import java.util.Optional;
 
 @RabbitListener
-public class DonationGoalPaymentListener {
+public class PaymentListener {
 
   private final ODALogger log = new ODALogger(this);
 
   private final GoalRepository repository;
-  private final GoalSender goalSender;
+  private final GoalFacade goalFacade;
 
   @Inject
-  public DonationGoalPaymentListener(
-    GoalRepository repository,
-    GoalSender goalSender
-  ) {
+  public PaymentListener(GoalRepository repository, GoalFacade goalFacade) {
     this.repository = repository;
-    this.goalSender = goalSender;
+    this.goalFacade = goalFacade;
   }
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Payments.GOAL)
@@ -35,17 +31,15 @@ public class DonationGoalPaymentListener {
 
     Optional.ofNullable(payment.goal())
       .flatMap(repository::getById)
-      .or(() -> findDefaultGoal(payment.recipientId()))
-      .map(goal -> goal.handlePayment(payment))
-      .map(Goal::asUpdatedGoal)
-      .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
-  }
-
-  private Optional<Goal> findDefaultGoal(String recipientId) {
-    return repository
-      .list(recipientId)
-      .stream()
-      .filter(goal -> goal.data().isDefault())
-      .findFirst();
+      .ifPresent(goal ->
+        goalFacade.run(
+          new CountPaymentInSpecifiedGoalCommand(
+            payment.id(),
+            payment.recipientId(),
+            goal.id(),
+            payment.amount()
+          )
+        )
+      );
   }
 }
