@@ -5,8 +5,8 @@ import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
+import io.github.opendonationassistant.events.config.ConfigCommand;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
-import io.github.opendonationassistant.events.config.ConfigPutCommand;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
@@ -124,7 +124,7 @@ public class GoalListener {
 
     // обновление конфига страницы
     configCommandSender.send(
-      new ConfigPutCommand(
+      new ConfigCommand.PutKeyValue(
         update.recipientId(),
         "paymentpage",
         "goals",
