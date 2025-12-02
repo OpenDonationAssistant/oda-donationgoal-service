@@ -8,6 +8,9 @@ import io.github.opendonationassistant.events.goal.GoalWidgetCommand;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.micronaut.serde.annotation.Serdeable;
+
+import static java.util.Optional.ofNullable;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -112,8 +115,8 @@ public class Goal {
       this.data.id(),
       this.data.widgetId(),
       this.data.recipientId(),
-      this.data.fullDescription(),
-      this.data.briefDescription(),
+      ofNullable(data.fullDescription()).orElse(""),
+      ofNullable(this.data.briefDescription()).orElse(""),
       this.data.requiredAmount(),
       this.data.accumulatedAmount(),
       this.data.isDefault()
@@ -124,8 +127,8 @@ public class Goal {
     return new GoalWidgetCommand(
       "update",
       this.data.id(),
-      this.data.fullDescription(),
-      this.data.briefDescription(),
+      ofNullable(this.data.fullDescription()).orElse(""),
+      ofNullable(this.data.briefDescription()).orElse(""),
       this.data.requiredAmount(),
       this.data.accumulatedAmount()
     );

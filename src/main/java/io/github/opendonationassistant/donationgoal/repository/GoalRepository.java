@@ -9,6 +9,7 @@ import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 @Singleton
 public class GoalRepository {
@@ -26,7 +27,7 @@ public class GoalRepository {
     this.commandSender = commandSender;
   }
 
-  public Goal create(String recipientId, String widgetId, String id) {
+  public Goal create(String recipientId, String widgetId, @Nullable String id) {
     log.info(
       "Create Goal",
       Map.of("recipientId", recipientId, "widgetId", widgetId, "id", id)
@@ -56,8 +57,10 @@ public class GoalRepository {
       .toList();
   }
 
-  public Optional<Goal> getById(String id) {
-    return dataRepository.getById(id).map(this::convert);
+  public Optional<Goal> getById(@Nullable String id) {
+    return Optional.ofNullable(id)
+      .flatMap(dataRepository::getById)
+      .map(this::convert);
   }
 
   public List<Goal> listByWidgetId(String recipientId, String widgetId) {

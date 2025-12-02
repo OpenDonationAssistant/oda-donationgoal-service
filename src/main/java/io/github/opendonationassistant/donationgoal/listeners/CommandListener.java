@@ -1,5 +1,7 @@
 package io.github.opendonationassistant.donationgoal.listeners;
 
+import static java.util.Optional.ofNullable;
+
 import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
@@ -40,18 +42,33 @@ public class CommandListener {
       case "CountPaymentInSpecifiedGoalCommand":
         var specifiedGoalCommand = ObjectMapper.getDefault()
           .readValue(payload, CountPaymentInSpecifiedGoalCommand.class);
-        repository
-          .getById(specifiedGoalCommand.goalId())
-          .map(goal -> goal.add(specifiedGoalCommand.amount()))
-          .map(Goal::asUpdatedGoal)
+        ofNullable(specifiedGoalCommand)
+          .flatMap(command -> {
+            return ofNullable(command.goalId())
+              .flatMap(repository::getById)
+              .map(goal -> {
+                ofNullable(command.amount()).ifPresent(amount ->
+                  goal.add(amount)
+                );
+                return goal.asUpdatedGoal();
+              });
+          })
           .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
         break;
       case "CountPaymentInDefaultGoalCommand":
         var defaultGoalCommand = ObjectMapper.getDefault()
           .readValue(payload, CountPaymentInDefaultGoalCommand.class);
-        findDefaultGoal(defaultGoalCommand.recipientId())
-          .map(goal -> goal.add(defaultGoalCommand.amount()))
-          .map(Goal::asUpdatedGoal)
+        ofNullable(defaultGoalCommand)
+          .flatMap(command -> {
+            return ofNullable(command.recipientId())
+              .flatMap(this::findDefaultGoal)
+              .map(goal -> {
+                ofNullable(command.amount()).ifPresent(amount ->
+                  goal.add(amount)
+                );
+                return goal.asUpdatedGoal();
+              });
+          })
           .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
         break;
       default:
