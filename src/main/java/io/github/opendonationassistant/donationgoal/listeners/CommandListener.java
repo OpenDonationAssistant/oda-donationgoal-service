@@ -46,12 +46,12 @@ public class CommandListener {
           .flatMap(command -> {
             return ofNullable(command.goalId())
               .flatMap(repository::getById)
-              .map(goal -> {
-                ofNullable(command.amount()).ifPresent(amount ->
-                  goal.add(amount)
-                );
-                return goal.asUpdatedGoal();
-              });
+              .map(goal ->
+                ofNullable(command.amount())
+                  .map(amount -> goal.add(amount))
+                  .orElse(goal)
+                  .asUpdatedGoal()
+              );
           })
           .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
         break;
@@ -62,12 +62,12 @@ public class CommandListener {
           .flatMap(command -> {
             return ofNullable(command.recipientId())
               .flatMap(this::findDefaultGoal)
-              .map(goal -> {
-                ofNullable(command.amount()).ifPresent(amount ->
-                  goal.add(amount)
-                );
-                return goal.asUpdatedGoal();
-              });
+              .map(goal ->
+                ofNullable(command.amount())
+                  .map(amount -> goal.add(amount))
+                  .orElse(goal)
+                  .asUpdatedGoal()
+              );
           })
           .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
         break;
