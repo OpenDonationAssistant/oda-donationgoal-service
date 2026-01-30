@@ -16,6 +16,10 @@ micronaut:
 endpoints:
   flyway:
     enabled: true
+  prometheus:
+    sensitive: false
+  metrics:
+    sensitive: false
 flyway:
   datasources:
     default:
