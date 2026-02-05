@@ -81,7 +81,7 @@ public class CommandListener {
     return repository
       .list(recipientId)
       .stream()
-      .filter(goal -> goal.data().isDefault())
+      .filter(goal -> goal.data().enabled() && goal.data().isDefault())
       .findFirst();
   }
 }
