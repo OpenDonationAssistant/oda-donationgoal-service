@@ -1,16 +1,16 @@
 package io.github.opendonationassistant.donationgoal.repository;
 
+import static java.util.Optional.ofNullable;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.uuid.Generators;
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.events.CompletedPaymentNotification;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommand;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
+import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.annotation.Serdeable;
-
-import static java.util.Optional.ofNullable;
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,46 +21,49 @@ public class Goal {
 
   private final GoalWidgetCommandSender commandSender;
   private final GoalDataRepository repository;
+  private final GoalLinkRepository linkRepository;
   private GoalData data;
 
   public Goal(
     GoalData data,
     GoalWidgetCommandSender commandSender,
-    GoalDataRepository repository
+    GoalDataRepository repository,
+    GoalLinkRepository linkRepository
   ) {
     this.commandSender = commandSender;
     this.repository = repository;
     this.data = data;
+    this.linkRepository = linkRepository;
   }
 
-  public Goal handlePayment(CompletedPaymentNotification payment) {
-    var paid = payment.amount().getMajor();
-    var oldAmount = this.data.accumulatedAmount();
-    return new Goal(
-      this.data.withAccumulatedAmount(
-          new Amount(
-            oldAmount.getMajor() + paid,
-            oldAmount.getMinor(),
-            oldAmount.getCurrency()
-          )
-        ),
-      commandSender,
-      repository
+  public void link(String originId, String source) {
+    linkRepository.save(
+      new GoalLink(
+        Generators.timeBasedEpochGenerator().generate().toString(),
+        data.id(),
+        originId,
+        source
+      )
     );
+  }
+
+  public Goal handlePayment(HistoryItemEvent payment) {
+    if (payment.amount() == null) {
+      return this;
+    }
+    return add(payment.amount());
   }
 
   public Goal add(Amount amount) {
     var oldAmount = this.data.accumulatedAmount();
-    return new Goal(
-      this.data.withAccumulatedAmount(
-          new Amount(
-            oldAmount.getMajor() + amount.getMajor(),
-            oldAmount.getMinor(),
-            oldAmount.getCurrency()
-          )
-        ),
-      commandSender,
-      repository
+    return update(
+      data.withAccumulatedAmount(
+        new Amount(
+          oldAmount.getMajor() + amount.getMajor(),
+          oldAmount.getMinor(),
+          oldAmount.getCurrency()
+        )
+      )
     );
   }
 
@@ -82,7 +85,7 @@ public class Goal {
       .orElse(0);
 
     var isDefault = (Boolean) config.getOrDefault("default", false);
-    return new Goal(
+    return update(
       new GoalData(
         this.data.id(),
         this.data.recipientId(),
@@ -93,10 +96,12 @@ public class Goal {
         new Amount(amount, 0, "RUB"),
         enabled,
         isDefault
-      ),
-      commandSender,
-      repository
+      )
     );
+  }
+
+  private Goal update(GoalData data) {
+    return new Goal(data, commandSender, repository, linkRepository);
   }
 
   public Goal save() {
@@ -149,18 +154,6 @@ public class Goal {
       "default",
       Optional.ofNullable(this.data.isDefault()).orElse(false)
     );
-  }
-
-  public String id() {
-    return this.data.id();
-  }
-
-  public String widgetId() {
-    return this.data.widgetId();
-  }
-
-  public boolean isEnabled() {
-    return this.data.enabled();
   }
 
   @JsonGetter("data")

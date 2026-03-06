@@ -17,14 +17,24 @@ public class GoalRepository {
   private final ODALogger log = new ODALogger(this);
   private final GoalDataRepository dataRepository;
   private final GoalWidgetCommandSender commandSender;
+  private final GoalLinkRepository linkRepository;
 
   @Inject
   public GoalRepository(
     GoalDataRepository dataRepository,
-    GoalWidgetCommandSender commandSender
+    GoalWidgetCommandSender commandSender,
+    GoalLinkRepository linkRepository
   ) {
     this.dataRepository = dataRepository;
     this.commandSender = commandSender;
+    this.linkRepository = linkRepository;
+  }
+
+  public Optional<Goal> getByOriginId(String originId) {
+    return Optional.ofNullable(originId)
+      .flatMap(linkRepository::getByOriginId)
+      .flatMap(link -> dataRepository.getById(link.goalId()))
+      .map(this::convert);
   }
 
   public Goal create(String recipientId, String widgetId, @Nullable String id) {
@@ -46,7 +56,7 @@ public class GoalRepository {
       false
     );
     dataRepository.save(data);
-    return new Goal(data, commandSender, dataRepository);
+    return new Goal(data, commandSender, dataRepository, linkRepository);
   }
 
   public List<Goal> list(String recipientId) {
@@ -72,6 +82,6 @@ public class GoalRepository {
   }
 
   private Goal convert(GoalData data) {
-    return new Goal(data, commandSender, dataRepository);
+    return new Goal(data, commandSender, dataRepository, linkRepository);
   }
 }

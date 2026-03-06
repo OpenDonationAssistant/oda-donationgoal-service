@@ -8,13 +8,12 @@
   <parent>
     <groupId>io.micronaut.platform</groupId>
     <artifactId>micronaut-parent</artifactId>
-    <version>4.10.6</version>
+    <version>4.10.7</version>
   </parent>
   <properties>
     <packaging>jar</packaging>
     <jdk.version>25</jdk.version>
     <release.version>25</release.version>
-    <micronaut.runtime>netty</micronaut.runtime>
     <micronaut.test.resources.enabled>true</micronaut.test.resources.enabled>
     <micronaut.aot.enabled>false</micronaut.aot.enabled>
     <micronaut.aot.packageName>io.github.opendonationassistant.aot.generated</micronaut.aot.packageName>
@@ -30,7 +29,7 @@
     <dependency>
       <groupId>io.github.opendonationassistant</groupId>
       <artifactId>oda-rabbit-conf</artifactId>
-      <version>0.9.136</version>
+      <version>0.10.154</version>
     </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
@@ -96,11 +95,6 @@
       <groupId>io.micronaut.rabbitmq</groupId>
       <artifactId>micronaut-rabbitmq</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.micronaut</groupId>
-      <artifactId>micronaut-http-client</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.micronaut.test</groupId>

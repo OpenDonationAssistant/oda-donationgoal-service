@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 @RabbitListener
 public class ConfigListener {
 
@@ -54,10 +56,12 @@ public class ConfigListener {
     }
 
     if ("deleted".equals(event.type())) {
+      log.info("Deleting goals", Map.of("widgetId", widget.id()));
       repository
         .listByWidgetId(widget.ownerId(), widget.id())
         .stream()
         .forEach(Goal::delete);
+      triggerConfigReload(widget);
     }
 
     List<Goal> savedGoals = repository.list(widget.ownerId());
@@ -72,35 +76,18 @@ public class ConfigListener {
         .forEach(property -> {
           if ("goal".equals(property.name())) {
             var goals = (List<Map<String, Object>>) property.value();
-            updatedGoals.addAll(
-              Optional.ofNullable(goals)
-                .orElse(List.of())
-                .stream()
-                .map(config -> {
-                  var id = (String) config.get("id");
-                  Goal updated = repository
-                    .getById(id)
-                    .orElseGet(() ->
-                      repository.create(widget.ownerId(), widget.id(), id)
-                    )
-                    .update(widget.enabled(), config);
-                  // TODO: batch
-                  updatedGoalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
-                  return updated.save();
-                })
-                .toList()
-            );
+            updatedGoals.addAll(convert(widget, goals));
           }
         });
       log.info("Configuration changed", Map.of("goals", updatedGoals));
 
       savedGoals
         .stream()
-        .filter(goal -> widget.id().equals(goal.widgetId()))
+        .filter(goal -> widget.id().equals(goal.data().widgetId()))
         .filter(goal -> {
           var result = updatedGoals
             .stream()
-            .filter(updated -> updated.id().equals(goal.id()))
+            .filter(updated -> updated.data().id().equals(goal.data().id()))
             .findAny()
             .isEmpty();
           log.info(
@@ -110,7 +97,11 @@ public class ConfigListener {
           return result;
         })
         .forEach(Goal::delete);
+        triggerConfigReload(widget);
+    }
+  }
 
+  private void triggerConfigReload(Widget widget){
       updatedGoalSender.sendGoal(
         Stage.SYNCED,
         new UpdatedGoal(
@@ -124,6 +115,25 @@ public class ConfigListener {
           false
         )
       );
-    }
+  }
+
+  private List<Goal> convert(
+    Widget widget,
+    @Nullable List<Map<String, Object>> propertyValue
+  ) {
+    return Optional.ofNullable(propertyValue)
+      .orElse(List.of())
+      .stream()
+      .map(config -> {
+        var id = (String) config.get("id");
+        Goal updated = repository
+          .getById(id)
+          .orElseGet(() -> repository.create(widget.ownerId(), widget.id(), id))
+          .update(widget.enabled(), config);
+        // TODO: batch
+        updatedGoalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
+        return updated.save();
+      })
+      .toList();
   }
 }

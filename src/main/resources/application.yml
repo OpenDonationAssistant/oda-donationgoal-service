@@ -13,6 +13,16 @@ micronaut:
           jwks:
             keycloak:
               url: https://auth.oda.digital/realms/ODA/protocol/openid-connect/certs
+  executors:
+    events-listener:
+      type: fixed
+      nThreads: 1
+    command-listener:
+      type: fixed
+      nThreads: 1
+  serde:
+    serialization:
+      inclusion: ALWAYS
 endpoints:
   flyway:
     enabled: true

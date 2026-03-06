@@ -35,7 +35,10 @@ public class CommandListener {
     this.goalSender = goalSender;
   }
 
-  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.COMMAND)
+  @Queue(
+    value = io.github.opendonationassistant.rabbit.Queue.Goal.COMMAND,
+    executor = "command-listener"
+  )
   public void listen(@MessageHeader String type, byte[] payload)
     throws IOException {
     switch (type) {
@@ -59,16 +62,17 @@ public class CommandListener {
         var defaultGoalCommand = ObjectMapper.getDefault()
           .readValue(payload, CountPaymentInDefaultGoalCommand.class);
         ofNullable(defaultGoalCommand)
-          .flatMap(command -> {
-            return ofNullable(command.recipientId())
+          .flatMap(command ->
+            ofNullable(command.recipientId())
               .flatMap(this::findDefaultGoal)
-              .map(goal ->
-                ofNullable(command.amount())
+              .map(goal -> {
+                goal.link(command.paymentId(), "payment");
+                return ofNullable(command.amount())
                   .map(amount -> goal.add(amount))
                   .orElse(goal)
-                  .asUpdatedGoal()
-              );
-          })
+                  .asUpdatedGoal();
+              })
+          )
           .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
         break;
       default:

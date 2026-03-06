@@ -4,6 +4,7 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommand;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
@@ -32,6 +33,7 @@ public class GoalListener {
   private final WidgetCommandSender widgetCommandSender;
   private final GoalRepository repository;
   private final GoalDataRepository dataRepository;
+  private final GoalLinkRepository linkRepository;
   private final UpdatedGoalSender goalSender;
 
   @Inject
@@ -41,7 +43,8 @@ public class GoalListener {
     WidgetCommandSender widgetCommandSender,
     GoalRepository repository,
     GoalDataRepository dataRepository,
-    UpdatedGoalSender goalSender
+    UpdatedGoalSender goalSender,
+    GoalLinkRepository linkRepository
   ) {
     this.configCommandSender = configCommandSender;
     this.goalCommandSender = goalCommandSender;
@@ -49,6 +52,7 @@ public class GoalListener {
     this.repository = repository;
     this.dataRepository = dataRepository;
     this.goalSender = goalSender;
+    this.linkRepository = linkRepository;
   }
 
   @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.CALCULATED)
@@ -66,7 +70,8 @@ public class GoalListener {
         update.isDefault()
       ),
       goalCommandSender,
-      dataRepository
+      dataRepository,
+      linkRepository
     );
     updated.save();
 
@@ -78,7 +83,7 @@ public class GoalListener {
       "",
       savedGoals
         .stream()
-        .filter(goal -> goal.widgetId().equals(update.widgetId()))
+        .filter(goal -> goal.data().widgetId().equals(update.widgetId()))
         .map(Goal::asWidgetConfigGoal)
         .reduce(
           new ArrayList<>(),
@@ -113,16 +118,21 @@ public class GoalListener {
         update.isDefault()
       ),
       goalCommandSender,
-      dataRepository
+      dataRepository,
+      linkRepository
     );
     List<Goal> savedGoals = repository.list(update.recipientId());
     log.info(
       "Reload all goals",
       Map.of("recipientId", update.recipientId(), "goals", savedGoals)
     );
-    savedGoals = savedGoals.stream().filter(goal -> goal.isEnabled()).toList();
+    savedGoals = savedGoals
+      .stream()
+      .filter(goal -> goal.data().enabled())
+      .toList();
 
     // обновление конфига страницы
+    // TODO fix nullable goals
     configCommandSender.send(
       new ConfigCommand.PutKeyValue(
         update.recipientId(),
