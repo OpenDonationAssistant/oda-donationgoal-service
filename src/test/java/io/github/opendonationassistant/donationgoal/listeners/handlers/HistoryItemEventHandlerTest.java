@@ -34,6 +34,7 @@ public class HistoryItemEventHandlerTest {
     "Should send GoalHistoryEvent when valid message with existing goal is handled"
   )
   void handle_validMessage_sendsGoalHistoryEvent() throws IOException {
+    // TODO use @Given args in method parameters instead
     final var originId = "test-origin-id";
     final var widgetId = "test-widget-id";
     final var goalId = "test-goal-id";

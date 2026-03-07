@@ -72,9 +72,7 @@ public class PaymentEventHandlerTest {
     @Given Amount amount
   ) throws IOException {
     final var event = Instancio.of(paymentEventModel)
-      .set(field(PaymentEvent::id), paymentId)
       .set(field(PaymentEvent::recipientId), recipientId)
-      .set(field(PaymentEvent::amount), amount)
       .set(field(PaymentEvent::goal), null)
       .create();
 
