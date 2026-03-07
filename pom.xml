@@ -137,6 +137,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.instancio</groupId>
+      <artifactId>instancio-junit</artifactId>
+      <version>5.0.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.micronaut.micrometer</groupId>
       <artifactId>micronaut-micrometer-registry-prometheus</artifactId>
     </dependency>

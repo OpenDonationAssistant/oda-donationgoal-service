@@ -13,6 +13,7 @@ import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.annotation.Serdeable;
 import java.util.Map;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 @Serdeable
 public class Goal {
@@ -36,26 +37,18 @@ public class Goal {
     this.linkRepository = linkRepository;
   }
 
-  public void link(String originId, String source) {
-    linkRepository.save(
-      new GoalLink(
-        Generators.timeBasedEpochGenerator().generate().toString(),
-        data.id(),
-        originId,
-        source
-      )
-    );
-  }
-
-  public Goal handlePayment(HistoryItemEvent payment) {
-    if (payment.amount() == null) {
-      return this;
-    }
-    return add(payment.amount());
-  }
-
-  public Goal add(Amount amount) {
+  public Goal add(Amount amount, String source, @Nullable String originId) {
     var oldAmount = this.data.accumulatedAmount();
+    if (originId != null) {
+      linkRepository.save(
+        new GoalLink(
+          Generators.timeBasedEpochGenerator().generate().toString(),
+          data.id(),
+          originId,
+          source
+        )
+      );
+    }
     return update(
       data.withAccumulatedAmount(
         new Amount(

@@ -1,7 +1,6 @@
 package io.github.opendonationassistant.donationgoal.listeners.handlers;
 
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.MessageHandler;
 import io.github.opendonationassistant.events.goal.GoalFacade;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
@@ -16,17 +15,11 @@ public class PaymentEventHandler implements MessageHandler {
   private final ODALogger log = new ODALogger(this);
   private final ObjectMapper mapper;
   private final GoalFacade facade;
-  private final GoalRepository repository;
 
   @Inject
-  public PaymentEventHandler(
-    ObjectMapper mapper,
-    GoalFacade facade,
-    GoalRepository repository
-  ) {
+  public PaymentEventHandler(ObjectMapper mapper, GoalFacade facade) {
     this.mapper = mapper;
     this.facade = facade;
-    this.repository = repository;
   }
 
   @Override
@@ -39,20 +32,15 @@ public class PaymentEventHandler implements MessageHandler {
     if (goalId == null) {
       return;
     }
-    log.debug("Received PaymentEvent", Map.of("payment", payment));
-    repository
-      .getById(payment.goal())
-      .ifPresent(goal -> {
-        goal.link(payment.id(), "payment");
-        facade.run(
-          new CountPaymentInSpecifiedGoalCommand(
-            payment.id(),
-            payment.recipientId(),
-            goalId,
-            payment.amount()
-          )
-        );
-      });
+    log.debug("Received PaymentEvent with Goal", Map.of("payment", payment));
+    facade.run(
+      new CountPaymentInSpecifiedGoalCommand(
+        payment.id(),
+        payment.recipientId(),
+        goalId,
+        payment.amount()
+      )
+    );
   }
 
   @Override

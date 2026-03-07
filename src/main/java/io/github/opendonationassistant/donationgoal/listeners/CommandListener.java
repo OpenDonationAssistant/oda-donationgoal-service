@@ -51,7 +51,9 @@ public class CommandListener {
               .flatMap(repository::getById)
               .map(goal ->
                 ofNullable(command.amount())
-                  .map(amount -> goal.add(amount))
+                  .map(amount ->
+                    goal.add(amount, "payment", command.paymentId())
+                  )
                   .orElse(goal)
                   .asUpdatedGoal()
               );
@@ -64,11 +66,12 @@ public class CommandListener {
         ofNullable(defaultGoalCommand)
           .flatMap(command ->
             ofNullable(command.recipientId())
-              .flatMap(this::findDefaultGoal)
+              .flatMap(repository::getDefaultGoal)
               .map(goal -> {
-                goal.link(command.paymentId(), "payment");
                 return ofNullable(command.amount())
-                  .map(amount -> goal.add(amount))
+                  .map(amount ->
+                    goal.add(amount, "payment", command.paymentId())
+                  )
                   .orElse(goal)
                   .asUpdatedGoal();
               })
@@ -79,13 +82,5 @@ public class CommandListener {
         log.info("Unknown command", Map.of("type", type));
         break;
     }
-  }
-
-  private Optional<Goal> findDefaultGoal(String recipientId) {
-    return repository
-      .list(recipientId)
-      .stream()
-      .filter(goal -> goal.data().enabled() && goal.data().isDefault())
-      .findFirst();
   }
 }

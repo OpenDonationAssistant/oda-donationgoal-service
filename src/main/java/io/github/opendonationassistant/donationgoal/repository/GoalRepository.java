@@ -67,6 +67,15 @@ public class GoalRepository {
       .toList();
   }
 
+  public Optional<Goal> getDefaultGoal(String recipientId) {
+    return dataRepository
+      .getByRecipientId(recipientId)
+      .stream()
+      .filter(goal -> goal.enabled() && goal.isDefault())
+      .findFirst()
+      .map(this::convert);
+  }
+
   public Optional<Goal> getById(@Nullable String id) {
     return Optional.ofNullable(id)
       .flatMap(dataRepository::getById)
