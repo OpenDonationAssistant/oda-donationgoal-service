@@ -9,7 +9,6 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommand;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
-import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.annotation.Serdeable;
 import java.util.Map;
 import java.util.Optional;
