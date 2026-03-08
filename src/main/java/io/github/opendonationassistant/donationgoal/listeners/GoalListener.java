@@ -66,7 +66,7 @@ public class GoalListener {
         update.fullDescription(),
         update.accumulatedAmount(),
         update.requiredAmount(),
-        true, // TODO: раз прилетел апдейт, сначит донатгол активный
+        true, // TODO: раз прилетел апдейт, значит донатгол активный
         update.isDefault()
       ),
       goalCommandSender,

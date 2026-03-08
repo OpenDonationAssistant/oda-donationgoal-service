@@ -3,7 +3,6 @@ package io.github.opendonationassistant.donationgoal.listeners;
 import static java.util.Optional.ofNullable;
 
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInDefaultGoalCommand;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
@@ -16,7 +15,6 @@ import io.micronaut.serde.ObjectMapper;
 import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @RabbitListener
 public class CommandListener {
