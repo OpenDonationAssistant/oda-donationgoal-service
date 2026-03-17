@@ -6,7 +6,7 @@
 The Docker image is available from GitHub Container Registry:
 
 ```bash
-docker pull ghcr.io/opendonationassistant/donationgoal-service:latest
+docker pull ghcr.io/opendonationassistant/oda-donationgoal-service:latest
 ```
 
 #### Required Environment Variables
@@ -28,7 +28,7 @@ docker run -d \
   -e JDBC_URL=jdbc:postgresql://postgres-host/postgres?currentSchema=donationgoal \
   -e JDBC_USER=postgres \
   -e JDBC_PASSWORD=your-password \
-  ghcr.io/opendonationassistant/donationgoal-service:latest
+  ghcr.io/opendonationassistant/oda-donationgoal-service:latest
 ```
 
 Make sure PostgreSQL and RabbitMQ are running and accessible before starting the service.
@@ -42,7 +42,7 @@ version: '3.8'
 
 services:
   donationgoal-service:
-    image: ghcr.io/opendonationassistant/donationgoal-service:latest
+    image: ghcr.io/opendonationassistant/oda-donationgoal-service:latest
     ports:
       - "8080:8080"
     environment:
