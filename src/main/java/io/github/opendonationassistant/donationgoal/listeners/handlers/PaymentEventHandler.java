@@ -1,7 +1,7 @@
 package io.github.opendonationassistant.donationgoal.listeners.handlers;
 
 import io.github.opendonationassistant.commons.logging.ODALogger;
-import io.github.opendonationassistant.events.MessageHandler;
+import io.github.opendonationassistant.events.AbstractMessageHandler;
 import io.github.opendonationassistant.events.goal.GoalFacade;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
 import io.github.opendonationassistant.events.payments.PaymentEvent;
@@ -10,24 +10,19 @@ import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
 
-public class PaymentEventHandler implements MessageHandler {
+public class PaymentEventHandler extends AbstractMessageHandler<PaymentEvent> {
 
   private final ODALogger log = new ODALogger(this);
-  private final ObjectMapper mapper;
   private final GoalFacade facade;
 
   @Inject
   public PaymentEventHandler(ObjectMapper mapper, GoalFacade facade) {
-    this.mapper = mapper;
     this.facade = facade;
+    super(mapper);
   }
 
   @Override
-  public void handle(byte[] message) throws IOException {
-    final var payment = mapper.readValue(message, PaymentEvent.class);
-    if (payment == null) {
-      return;
-    }
+  public void handle(PaymentEvent payment) throws IOException {
     final var goalId = payment.goal();
     if (goalId == null) {
       return;
@@ -41,10 +36,5 @@ public class PaymentEventHandler implements MessageHandler {
         payment.amount()
       )
     );
-  }
-
-  @Override
-  public String type() {
-    return "PaymentEvent";
   }
 }

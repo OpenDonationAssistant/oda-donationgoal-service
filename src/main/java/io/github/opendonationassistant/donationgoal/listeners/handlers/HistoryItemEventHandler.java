@@ -1,7 +1,7 @@
 package io.github.opendonationassistant.donationgoal.listeners.handlers;
 
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
-import io.github.opendonationassistant.events.MessageHandler;
+import io.github.opendonationassistant.events.AbstractMessageHandler;
 import io.github.opendonationassistant.events.history.HistoryFacade;
 import io.github.opendonationassistant.events.history.event.GoalHistoryEvent;
 import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
@@ -10,9 +10,9 @@ import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
-public class HistoryItemEventHandler implements MessageHandler {
+public class HistoryItemEventHandler
+  extends AbstractMessageHandler<HistoryItemEvent> {
 
-  private final ObjectMapper mapper;
   private final GoalRepository repository;
   private final HistoryFacade facade;
 
@@ -22,17 +22,13 @@ public class HistoryItemEventHandler implements MessageHandler {
     GoalRepository repository,
     HistoryFacade facade
   ) {
-    this.mapper = mapper;
     this.repository = repository;
     this.facade = facade;
+    super(mapper);
   }
 
   @Override
-  public void handle(byte[] message) throws IOException {
-    final var item = mapper.readValue(message, HistoryItemEvent.class);
-    if (item == null) {
-      return;
-    }
+  public void handle(HistoryItemEvent item) throws IOException {
     final var originId = item.originId();
     if (originId == null) {
       return;
@@ -44,16 +40,13 @@ public class HistoryItemEventHandler implements MessageHandler {
           new GoalHistoryEvent(
             "payment",
             originId,
+            goal.data().recipientId(),
             goal.data().widgetId(),
             goal.data().id(),
-            Optional.ofNullable(goal.data().briefDescription()).orElse("")
+            Optional.ofNullable(goal.data().briefDescription()).orElse(""),
+            goal.data().accumulatedAmount()
           )
         )
       );
-  }
-
-  @Override
-  public String type() {
-    return "HistoryItemEvent";
   }
 }
