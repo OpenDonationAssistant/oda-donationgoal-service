@@ -39,6 +39,7 @@ public class Goal {
   public Goal add(Amount amount, String source, @Nullable String originId) {
     var oldAmount = this.data.accumulatedAmount();
     if (originId != null) {
+      log.info("Adding link", Map.of("goal", this.data, "originId", originId));
       linkRepository.save(
         new GoalLink(
           Generators.timeBasedEpochGenerator().generate().toString(),

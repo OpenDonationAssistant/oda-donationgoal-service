@@ -1,5 +1,6 @@
 package io.github.opendonationassistant.donationgoal.listeners.handlers;
 
+import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.AbstractMessageHandler;
 import io.github.opendonationassistant.events.history.HistoryFacade;
@@ -8,11 +9,13 @@ import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.ObjectMapper;
 import jakarta.inject.Inject;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 public class HistoryItemEventHandler
   extends AbstractMessageHandler<HistoryItemEvent> {
 
+  private ODALogger log = new ODALogger(this);
   private final GoalRepository repository;
   private final HistoryFacade facade;
 
@@ -33,6 +36,9 @@ public class HistoryItemEventHandler
     if (originId == null) {
       return;
     }
+
+    log.debug("Searching linked goal by originId", Map.of("originId", originId));
+
     repository
       .getByOriginId(originId)
       .ifPresent(goal ->
