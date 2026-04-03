@@ -12,7 +12,7 @@ micronaut:
         signatures:
           jwks:
             keycloak:
-              url: https://auth.oda.digital/realms/ODA/protocol/openid-connect/certs
+              url: ${JWKS_URI}
   executors:
     events-listener:
       type: fixed
