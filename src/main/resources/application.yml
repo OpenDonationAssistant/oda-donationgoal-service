@@ -35,6 +35,8 @@ flyway:
     default:
       enabled: true
       baseline-on-migrate: true
+      schemas: 'donationgoal'
+      default-schema: 'donationgoal'
 jpa:
   default:
     entity-scan:
