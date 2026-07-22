@@ -1,13 +1,12 @@
 package io.github.opendonationassistant;
 
-import io.github.opendonationassistant.rabbit.RabbitConfiguration;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
-import io.micronaut.rabbitmq.connect.ChannelInitializer;
+import io.micronaut.context.annotation.Factory;
 import io.micronaut.runtime.Micronaut;
-import jakarta.inject.Singleton;
 
+@Factory
 public class Application {
 
   @ContextConfigurer
@@ -18,11 +17,6 @@ public class Application {
     public void configure(ApplicationContextBuilder builder) {
       builder.defaultEnvironments("standalone");
     }
-  }
-
-  @Singleton
-  public ChannelInitializer rabbitConfiguration() {
-    return new RabbitConfiguration();
   }
 
   public static void main(String[] args) {

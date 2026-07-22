@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.jspecify.annotations.Nullable;
 
 @RabbitListener
@@ -97,24 +96,24 @@ public class ConfigListener {
           return result;
         })
         .forEach(Goal::delete);
-        triggerConfigReload(widget);
+      triggerConfigReload(widget);
     }
   }
 
-  private void triggerConfigReload(Widget widget){
-      updatedGoalSender.sendGoal(
-        Stage.SYNCED,
-        new UpdatedGoal(
-          "",
-          widget.id(),
-          widget.ownerId(),
-          "",
-          "",
-          new Amount(0, 0, "RUB"),
-          new Amount(0, 0, "RUB"),
-          false
-        )
-      );
+  private void triggerConfigReload(Widget widget) {
+    updatedGoalSender.sendGoal(
+      Stage.SYNCED,
+      new UpdatedGoal(
+        "",
+        widget.id(),
+        widget.ownerId(),
+        "",
+        "",
+        new Amount(0, 0, "RUB"),
+        new Amount(0, 0, "RUB"),
+        false
+      )
+    );
   }
 
   private List<Goal> convert(

@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.micronaut.platform</groupId>
     <artifactId>micronaut-parent</artifactId>
-    <version>4.10.11</version>
+    <version>5.0.2</version>
   </parent>
   <properties>
     <packaging>jar</packaging>
@@ -19,6 +19,7 @@
     <micronaut.aot.packageName>io.github.opendonationassistant.aot.generated</micronaut.aot.packageName>
     <exec.mainClass>io.github.opendonationassistant.Application</exec.mainClass>
     <sonar.organization>opendonationassistant</sonar.organization>
+    <sonar.proectKey>OpenDonationAssistant_oda-donationgoal-service</sonar.proectKey>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
@@ -35,7 +36,7 @@
     <dependency>
       <groupId>io.github.opendonationassistant</groupId>
       <artifactId>oda-rabbit-conf</artifactId>
-      <version>0.10.182</version>
+      <version>0.10.211</version>
     </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
@@ -128,21 +129,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.instancio</groupId>
       <artifactId>instancio-junit</artifactId>
       <version>5.0.1</version>
@@ -176,6 +162,17 @@
               <groupId>io.micronaut</groupId>
               <artifactId>micronaut-inject-java</artifactId>
               <version>${micronaut.core.version}</version>
+            </path>
+            <path>
+              <groupId>io.micronaut.serde</groupId>
+              <artifactId>micronaut-serde-processor</artifactId>
+              <version>${micronaut.serialization.version}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>io.micronaut</groupId>
+                  <artifactId>micronaut-inject</artifactId>
+                </exclusion>
+              </exclusions>
             </path>
             <path>
               <groupId>io.micronaut.data</groupId>
@@ -214,7 +211,8 @@
             <arg>-Amicronaut.processing.module=oda-donationgoal-service</arg>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
-            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=io.github.opendonationassistant -XepOpt:NullAway:JSpecifyMode=true -Xep:NullAway:ERROR</arg>
+            <arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=io.github.opendonationassistant -XepOpt:NullAway:JSpecifyMode=true -Xep:NullAway:ERROR -XepExcludedPaths:.*/target/generated-sources/.*</arg>
+
           </compilerArgs>
         </configuration>
       </plugin>
