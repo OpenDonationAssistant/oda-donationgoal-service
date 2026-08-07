@@ -12,10 +12,9 @@ import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
+import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetCommandSender;
-import io.github.opendonationassistant.events.widget.WidgetConfig;
-import io.github.opendonationassistant.events.widget.WidgetProperty;
-import io.github.opendonationassistant.events.widget.WidgetUpdateCommand;
+import io.github.opendonationassistant.events.widget.WidgetCommandSender.WidgetUpdateCommand;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
@@ -77,7 +76,7 @@ public class GoalListener {
 
     List<Goal> savedGoals = repository.list(update.recipientId());
     // обновление настроек виджета
-    var goals = new WidgetProperty(
+    var goals = new Widget.WidgetProperty(
       "goal",
       "Цель",
       "",
@@ -97,7 +96,7 @@ public class GoalListener {
           }
         )
     );
-    var patch = new WidgetConfig(List.of(goals));
+    var patch = new Widget.WidgetConfig(List.of(goals));
     widgetCommandSender.send(new WidgetUpdateCommand(update.widgetId(), patch));
 
     goalSender.sendGoal(Stage.SYNCED, update);

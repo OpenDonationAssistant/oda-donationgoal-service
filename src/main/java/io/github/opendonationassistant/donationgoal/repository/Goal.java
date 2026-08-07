@@ -36,6 +36,40 @@ public class Goal {
     this.linkRepository = linkRepository;
   }
 
+  public Goal decrease(Amount amount) {
+    var oldAmount = this.data.accumulatedAmount();
+    log.info("Decreasing goal", Map.of("goal", this.data, "amount", amount));
+    return update(
+      data.withAccumulatedAmount(
+        new Amount(
+          oldAmount.getMajor() - amount.getMajor(),
+          oldAmount.getMinor(),
+          oldAmount.getCurrency()
+        )
+      )
+    ).save();
+  }
+
+  public Goal setRequiredAmount(Amount amount) {
+    log.info(
+      "Setting required amount on goal",
+      Map.of("goal", this.data, "amount", amount)
+    );
+    return update(
+      new GoalData(
+        this.data.id(),
+        this.data.recipientId(),
+        this.data.widgetId(),
+        this.data.briefDescription(),
+        this.data.fullDescription(),
+        this.data.accumulatedAmount(),
+        amount,
+        this.data.enabled(),
+        this.data.isDefault()
+      )
+    );
+  }
+
   public Goal add(Amount amount, String source, @Nullable String originId) {
     var oldAmount = this.data.accumulatedAmount();
     if (originId != null) {
@@ -99,7 +133,7 @@ public class Goal {
 
   public Goal save() {
     log.info("Updating goal", Map.of("goal", this.data));
-    repository.update(this.data);
+    repository.save(this.data);
     return this;
   }
 
