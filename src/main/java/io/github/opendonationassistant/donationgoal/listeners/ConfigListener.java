@@ -10,6 +10,7 @@ import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
 import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetChangedEvent;
+import io.github.opendonationassistant.rabbit.Exchange;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.inject.Inject;
@@ -23,6 +24,14 @@ import org.jspecify.annotations.Nullable;
 public class ConfigListener {
 
   private static final String WIDGET_TYPE = "donationgoal";
+
+  public static final String QUEUE_NAME = "config.goals";
+  public static final io.github.opendonationassistant.rabbit.Queue QUEUE =
+    new io.github.opendonationassistant.rabbit.Queue(QUEUE_NAME);
+  public static final List<Exchange> BINDING = List.of(
+    Exchange.Exchange("changes.widgets", Map.of("goal", QUEUE)),
+    Exchange.Exchange("changes.widgets", Map.of("donationgoal", QUEUE))
+  );
 
   private final ODALogger log = new ODALogger(this);
   private final GoalRepository repository;
@@ -40,7 +49,7 @@ public class ConfigListener {
     this.updatedGoalSender = updatedGoalSender;
   }
 
-  @Queue(io.github.opendonationassistant.rabbit.Queue.Configs.GOAL)
+  @Queue(QUEUE_NAME)
   public void listen(WidgetChangedEvent event) {
     if (event == null) {
       return;

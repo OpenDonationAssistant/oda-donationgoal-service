@@ -34,10 +34,14 @@ public class HistoryItemEventHandler
   public void handle(HistoryItemEvent item) throws IOException {
     final var originId = item.originId();
     if (originId == null) {
+      log.debug("originId is null", Map.of("id", item.id()));
       return;
     }
 
-    log.debug("Searching linked goal by originId", Map.of("originId", originId));
+    log.debug(
+      "Searching linked goal by originId",
+      Map.of("originId", originId)
+    );
 
     repository
       .getByOriginId(originId)

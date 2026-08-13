@@ -15,6 +15,7 @@ import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
 import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetCommandSender;
 import io.github.opendonationassistant.events.widget.WidgetCommandSender.WidgetUpdateCommand;
+import io.github.opendonationassistant.rabbit.Exchange;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
@@ -25,6 +26,20 @@ import java.util.Map;
 
 @RabbitListener
 public class GoalListener {
+
+  public static final String CALCULATED_GOALS = "goal.calculated";
+  public static final String FINISHED_GOALS = "goal.finished";
+  public static final io.github.opendonationassistant.rabbit.Queue CALCULATED_GOALS_QUEUE =
+    new io.github.opendonationassistant.rabbit.Queue(CALCULATED_GOALS);
+  public static final io.github.opendonationassistant.rabbit.Queue FINISHED_GOALS_QUEUE =
+    new io.github.opendonationassistant.rabbit.Queue(FINISHED_GOALS);
+  public static final List<Exchange> BINDING = List.of(
+    Exchange.Exchange(
+      "goals",
+      Map.of("afterautomation", CALCULATED_GOALS_QUEUE)
+    ),
+    Exchange.Exchange("goals", Map.of("synced", FINISHED_GOALS_QUEUE))
+  );
 
   private final ODALogger log = new ODALogger(this);
   private final ConfigCommandSender configCommandSender;
@@ -54,7 +69,7 @@ public class GoalListener {
     this.linkRepository = linkRepository;
   }
 
-  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.CALCULATED)
+  @Queue(CALCULATED_GOALS)
   public void listen(UpdatedGoal update) {
     var updated = new Goal(
       new GoalData(
@@ -102,7 +117,7 @@ public class GoalListener {
     goalSender.sendGoal(Stage.SYNCED, update);
   }
 
-  @Queue(io.github.opendonationassistant.rabbit.Queue.Goal.FINISHED)
+  @Queue(FINISHED_GOALS)
   public void listenFinished(UpdatedGoal update) {
     var updated = new Goal(
       new GoalData(

@@ -25,6 +25,7 @@ public class PaymentEventHandler extends AbstractMessageHandler<PaymentEvent> {
   public void handle(PaymentEvent payment) throws IOException {
     final var goalId = payment.goal();
     if (goalId == null) {
+      log.debug("goalId is null", Map.of("id", payment.id()));
       return;
     }
     log.debug("Received PaymentEvent with Goal", Map.of("payment", payment));
