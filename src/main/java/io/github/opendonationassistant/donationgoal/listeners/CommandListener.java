@@ -31,7 +31,7 @@ public class CommandListener {
   public static final io.github.opendonationassistant.rabbit.Queue QUEUE =
     new io.github.opendonationassistant.rabbit.Queue(QUEUE_NAME);
   public static final List<Exchange> BINDING = List.of(
-    Exchange.Exchange("commands", Map.of(Key.COMMAND, QUEUE))
+    Exchange.Exchange("goals", Map.of(Key.COMMAND, QUEUE))
   );
 
   private final ODALogger log = new ODALogger(this);
