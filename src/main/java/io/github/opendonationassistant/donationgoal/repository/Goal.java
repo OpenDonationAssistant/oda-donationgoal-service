@@ -133,7 +133,7 @@ public class Goal {
 
   public Goal save() {
     log.info("Updating goal", Map.of("goal", this.data));
-    repository.save(this.data);
+    repository.update(this.data);
     return this;
   }
 

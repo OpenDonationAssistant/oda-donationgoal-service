@@ -50,8 +50,8 @@ public class GoalRepository {
       widgetId,
       "",
       "",
-      new Amount(100, 0, "RUB"),
-      new Amount(100, 0, "RUB"),
+      new Amount(0, 0, "RUB"),
+      new Amount(0, 0, "RUB"),
       true,
       false
     );
