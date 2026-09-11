@@ -65,7 +65,7 @@ public class Goal {
         this.data.accumulatedAmount(),
         amount,
         this.data.enabled(),
-        this.data.isDefault()
+        this.data.mode()
       )
     );
   }
@@ -111,7 +111,7 @@ public class Goal {
       .map(it -> (Integer) it.get("major"))
       .orElse(0);
 
-    var isDefault = (Boolean) config.getOrDefault("default", false);
+    var mode = GoalMode.fromConfig(config.getOrDefault("mode", "choose"));
     return update(
       new GoalData(
         this.data.id(),
@@ -122,7 +122,7 @@ public class Goal {
         new Amount(accumulatedAmount, 0, "RUB"),
         new Amount(amount, 0, "RUB"),
         enabled,
-        isDefault
+        mode
       )
     );
   }
@@ -151,7 +151,7 @@ public class Goal {
       ofNullable(this.data.briefDescription()).orElse(""),
       this.data.requiredAmount(),
       this.data.accumulatedAmount(),
-      this.data.isDefault()
+      this.data.mode() == GoalMode.DEFAULT
     );
   }
 
@@ -178,8 +178,8 @@ public class Goal {
       this.data.accumulatedAmount(),
       "requiredAmount",
       this.data.requiredAmount(),
-      "default",
-      Optional.ofNullable(this.data.isDefault()).orElse(false)
+      "mode",
+      this.data.mode().name().toLowerCase()
     );
   }
 

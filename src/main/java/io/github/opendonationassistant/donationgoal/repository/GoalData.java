@@ -3,9 +3,8 @@ package io.github.opendonationassistant.donationgoal.repository;
 import io.github.opendonationassistant.commons.Amount;
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.MappedEntity;
-import io.micronaut.data.annotation.MappedProperty;
 import io.micronaut.serde.annotation.Serdeable;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Serdeable
 @MappedEntity("goal")
@@ -18,7 +17,7 @@ public record GoalData(
   Amount accumulatedAmount,
   Amount requiredAmount,
   Boolean enabled,
-  @MappedProperty("isdefault") Boolean isDefault
+  GoalMode mode
 ) {
   public GoalData withAccumulatedAmount(Amount amount) {
     return new GoalData(
@@ -30,7 +29,7 @@ public record GoalData(
       amount,
       requiredAmount,
       enabled,
-      isDefault
+      mode
     );
   }
 }

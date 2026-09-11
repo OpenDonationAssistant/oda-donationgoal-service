@@ -7,6 +7,7 @@ import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
@@ -64,7 +65,7 @@ public class HistoryItemEventHandlerTest {
       new Amount(100, 0, "RUB"),
       new Amount(1000, 0, "RUB"),
       true,
-      false
+      GoalMode.CHOOSE
     );
     var goal = new Goal(
       goalData,
@@ -139,7 +140,7 @@ public class HistoryItemEventHandlerTest {
       new Amount(100, 0, "RUB"),
       new Amount(1000, 0, "RUB"),
       true,
-      false
+      GoalMode.CHOOSE
     );
     var goal = new Goal(
       goalData,

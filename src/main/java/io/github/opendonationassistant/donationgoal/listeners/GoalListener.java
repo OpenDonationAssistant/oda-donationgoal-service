@@ -4,6 +4,7 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommand;
@@ -71,6 +72,10 @@ public class GoalListener {
 
   @Queue(CALCULATED_GOALS)
   public void listen(UpdatedGoal update) {
+    var mode = dataRepository
+      .getById(update.goalId())
+      .map(GoalData::mode)
+      .orElseGet(() -> update.isDefault() ? GoalMode.DEFAULT : GoalMode.CHOOSE);
     var updated = new Goal(
       new GoalData(
         update.goalId(),
@@ -81,7 +86,7 @@ public class GoalListener {
         update.accumulatedAmount(),
         update.requiredAmount(),
         true, // TODO: раз прилетел апдейт, значит донатгол активный
-        update.isDefault()
+        mode
       ),
       goalCommandSender,
       dataRepository,
@@ -119,6 +124,10 @@ public class GoalListener {
 
   @Queue(FINISHED_GOALS)
   public void listenFinished(UpdatedGoal update) {
+    var goalMode = dataRepository
+      .getById(update.goalId())
+      .map(GoalData::mode)
+      .orElseGet(() -> update.isDefault() ? GoalMode.DEFAULT : GoalMode.CHOOSE);
     var updated = new Goal(
       new GoalData(
         update.goalId(),
@@ -129,7 +138,7 @@ public class GoalListener {
         update.accumulatedAmount(),
         update.requiredAmount(),
         true, // TODO: раз прилетел апдейт, сначит донатгол активный
-        update.isDefault()
+        goalMode
       ),
       goalCommandSender,
       dataRepository,
@@ -140,21 +149,23 @@ public class GoalListener {
       "Reload all goals",
       Map.of("recipientId", update.recipientId(), "goals", savedGoals)
     );
-    savedGoals = savedGoals
-      .stream()
-      .filter(goal -> goal.data().enabled())
-      .toList();
 
-    // обновление конфига страницы
-    // TODO fix nullable goals
-    configCommandSender.send(
-      new ConfigCommand.PutKeyValue(
-        update.recipientId(),
-        "paymentpage",
-        "goals",
-        savedGoals.stream().map(Goal::data).toList()
-      )
-    );
+    // обновление конфига страницы — skip for "all" mode
+    if (goalMode != GoalMode.ALL) {
+      savedGoals = savedGoals
+        .stream()
+        .filter(goal -> goal.data().enabled())
+        .toList();
+      // TODO fix nullable goals
+      configCommandSender.send(
+        new ConfigCommand.PutKeyValue(
+          update.recipientId(),
+          "paymentpage",
+          "goals",
+          savedGoals.stream().map(Goal::data).toList()
+        )
+      );
+    }
 
     // TODO: send 1 message instead of 3 ( maybe use WidgetChangedNotification)
     // TODO: reload would be done without it, is it needed?

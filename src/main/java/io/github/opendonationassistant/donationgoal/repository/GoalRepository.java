@@ -53,7 +53,7 @@ public class GoalRepository {
       new Amount(0, 0, "RUB"),
       new Amount(0, 0, "RUB"),
       true,
-      false
+      GoalMode.CHOOSE
     );
     dataRepository.save(data);
     return new Goal(data, commandSender, dataRepository, linkRepository);
@@ -71,7 +71,7 @@ public class GoalRepository {
     return dataRepository
       .getByRecipientId(recipientId)
       .stream()
-      .filter(goal -> goal.enabled() && goal.isDefault())
+      .filter(goal -> goal.enabled() && goal.mode() == GoalMode.DEFAULT)
       .findFirst()
       .map(this::convert);
   }
