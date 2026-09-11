@@ -1,6 +1,7 @@
 package io.github.opendonationassistant.donationgoal.listeners.handlers;
 
 import io.github.opendonationassistant.commons.logging.ODALogger;
+import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.AbstractMessageHandler;
 import io.github.opendonationassistant.events.history.HistoryFacade;
@@ -15,7 +16,7 @@ import java.util.Optional;
 public class HistoryItemEventHandler
   extends AbstractMessageHandler<HistoryItemEvent> {
 
-  private ODALogger log = new ODALogger(this);
+  private final ODALogger log = new ODALogger(this);
   private final GoalRepository repository;
   private final HistoryFacade facade;
 
@@ -39,24 +40,25 @@ public class HistoryItemEventHandler
     }
 
     log.debug(
-      "Searching linked goal by originId",
+      "Searching linked goals by originId",
       Map.of("originId", originId)
     );
-
     repository
       .getByOriginId(originId)
-      .ifPresent(goal ->
-        facade.sendEvent(
-          new GoalHistoryEvent(
-            "payment",
-            originId,
-            goal.data().recipientId(),
-            goal.data().widgetId(),
-            goal.data().id(),
-            Optional.ofNullable(goal.data().briefDescription()).orElse(""),
-            goal.data().accumulatedAmount()
-          )
-        )
-      );
+      .forEach(goal -> sendGoalHistoryEvent(originId, item.type(), goal));
+  }
+
+  private void sendGoalHistoryEvent(String originId, String source, Goal goal) {
+    facade.sendEvent(
+      new GoalHistoryEvent(
+        source,
+        originId,
+        goal.data().recipientId(),
+        goal.data().widgetId(),
+        goal.data().id(),
+        Optional.ofNullable(goal.data().briefDescription()).orElse(""),
+        goal.data().accumulatedAmount()
+      )
+    );
   }
 }

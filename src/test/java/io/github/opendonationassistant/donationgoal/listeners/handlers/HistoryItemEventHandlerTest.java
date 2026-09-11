@@ -7,8 +7,8 @@ import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
-import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.goal.GoalWidgetCommandSender;
 import io.github.opendonationassistant.events.history.HistoryFacade;
@@ -18,16 +18,18 @@ import io.micronaut.serde.ObjectMapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import org.instancio.Instancio;
 import org.instancio.Model;
 import org.instancio.junit.InstancioExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.jspecify.annotations.Nullable;
 
 @ExtendWith(InstancioExtension.class)
 public class HistoryItemEventHandlerTest {
+
+  private static final String WIDGET_ID = "test-widget-id";
 
   private final ObjectMapper mapper = ObjectMapper.getDefault();
   private final GoalRepository repository = mock(GoalRepository.class);
@@ -44,44 +46,53 @@ public class HistoryItemEventHandlerTest {
     .set(field(HistoryItemEvent::actions), List.of())
     .toModel();
 
-  @Test
-  @DisplayName(
-    "Should send GoalHistoryEvent when valid message with existing goal is handled"
-  )
-  void handle_validMessage_sendsGoalHistoryEvent() throws IOException {
-    // TODO replace with @Given arg in method parameters
-    var originId = "test-origin-id";
-    var widgetId = "test-widget-id";
-    var goalId = "test-goal-id";
-    var briefDescription = "Test Goal";
-    var recipientId = "test-recipient-id";
-
+  private Goal goal(
+    String id,
+    String recipientId,
+    @Nullable String briefDescription,
+    GoalMode mode
+  ) {
     var goalData = new GoalData(
-      goalId,
+      id,
       recipientId,
-      widgetId,
+      WIDGET_ID,
       briefDescription,
       "Full description",
       new Amount(100, 0, "RUB"),
       new Amount(1000, 0, "RUB"),
       true,
-      GoalMode.CHOOSE
+      mode
     );
-    var goal = new Goal(
+    return new Goal(
       goalData,
       mock(GoalWidgetCommandSender.class),
       mock(GoalDataRepository.class),
       mock(GoalLinkRepository.class)
     );
-    when(repository.getByOriginId(originId)).thenReturn(Optional.of(goal));
+  }
 
-    var event = Instancio.of(historyItemEventModel)
+  private HistoryItemEvent event(String originId, String recipientId, String type) {
+    return Instancio.of(historyItemEventModel)
       .set(field(HistoryItemEvent::id), "event-id")
-      .set(field(HistoryItemEvent::type), "payment")
+      .set(field(HistoryItemEvent::type), type)
       .set(field(HistoryItemEvent::originId), originId)
       .set(field(HistoryItemEvent::recipientId), recipientId)
       .set(field(HistoryItemEvent::amount), new Amount(100, 0, "RUB"))
       .create();
+  }
+
+  @Test
+  @DisplayName(
+    "Should send GoalHistoryEvent when valid message with existing goal is handled"
+  )
+  void handle_validMessage_sendsGoalHistoryEvent() throws IOException {
+    var originId = "test-origin-id";
+    var recipientId = "test-recipient-id";
+    var goalId = "test-goal-id";
+    var briefDescription = "Test Goal";
+    var event = event(originId, recipientId, "payment");
+    var goal = goal(goalId, recipientId, briefDescription, GoalMode.CHOOSE);
+    when(repository.getByOriginId(originId)).thenReturn(List.of(goal));
 
     handler.handle(mapper.writeValueAsBytes(event));
 
@@ -90,7 +101,7 @@ public class HistoryItemEventHandlerTest {
         (GoalHistoryEvent e) ->
           "payment".equals(e.source()) &&
           originId.equals(e.originId()) &&
-          widgetId.equals(e.widgetId()) &&
+          WIDGET_ID.equals(e.widgetId()) &&
           goalId.equals(e.goalId()) &&
           briefDescription.equals(e.title())
       )
@@ -113,7 +124,7 @@ public class HistoryItemEventHandlerTest {
   @Test
   @DisplayName("Should not send event when goal is not found")
   void handle_goalNotFound_noEventSent() throws IOException {
-    when(repository.getByOriginId(any())).thenReturn(Optional.empty());
+    when(repository.getByOriginId(any())).thenReturn(List.of());
 
     var event = Instancio.of(historyItemEventModel).create();
 
@@ -128,42 +139,11 @@ public class HistoryItemEventHandlerTest {
   )
   void handle_goalWithNullDescription_usesEmptyString() throws IOException {
     var originId = "test-origin-id";
-    var widgetId = "test-widget-id";
-    var goalId = "test-goal-id";
+    var recipientId = "test-recipient-id";
+    var goal = goal("test-goal-id", recipientId, null, GoalMode.CHOOSE);
+    when(repository.getByOriginId(originId)).thenReturn(List.of(goal));
 
-    var goalData = new GoalData(
-      goalId,
-      "recipient-id",
-      widgetId,
-      null,
-      "Full description",
-      new Amount(100, 0, "RUB"),
-      new Amount(1000, 0, "RUB"),
-      true,
-      GoalMode.CHOOSE
-    );
-    var goal = new Goal(
-      goalData,
-      mock(GoalWidgetCommandSender.class),
-      mock(GoalDataRepository.class),
-      mock(GoalLinkRepository.class)
-    );
-    when(repository.getByOriginId(originId)).thenReturn(Optional.of(goal));
-
-    var event = new HistoryItemEvent(
-      "event-id",
-      "donation",
-      "recipient-id",
-      "system",
-      originId,
-      Instant.now(),
-      "nickname",
-      new Amount(100, 0, "RUB"),
-      "message",
-      List.of(),
-      List.of(),
-      null
-    );
+    var event = event(originId, recipientId, "donation");
 
     handler.handle(mapper.writeValueAsBytes(event));
 

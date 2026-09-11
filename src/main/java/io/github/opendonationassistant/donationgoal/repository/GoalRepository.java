@@ -30,11 +30,16 @@ public class GoalRepository {
     this.linkRepository = linkRepository;
   }
 
-  public Optional<Goal> getByOriginId(String originId) {
+  public List<Goal> getByOriginId(@Nullable String originId) {
     return Optional.ofNullable(originId)
-      .flatMap(linkRepository::getByOriginId)
-      .flatMap(link -> dataRepository.getById(link.goalId()))
-      .map(this::convert);
+      .stream()
+      .flatMap(id -> linkRepository.getAllByOriginId(id).stream())
+      .map(GoalLink::goalId)
+      .distinct()
+      .map(dataRepository::getById)
+      .flatMap(Optional::stream)
+      .map(this::convert)
+      .toList();
   }
 
   public Goal create(String recipientId, String widgetId, @Nullable String id) {
@@ -85,6 +90,14 @@ public class GoalRepository {
   public List<Goal> listByWidgetId(String recipientId, String widgetId) {
     return dataRepository
       .getByRecipientIdAndWidgetId(recipientId, widgetId)
+      .stream()
+      .map(this::convert)
+      .toList();
+  }
+
+  public List<Goal> listByMode(String recipientId, GoalMode mode) {
+    return dataRepository
+      .getByRecipientIdAndMode(recipientId, mode)
       .stream()
       .map(this::convert)
       .toList();

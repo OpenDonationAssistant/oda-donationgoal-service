@@ -14,4 +14,5 @@ public interface GoalDataRepository extends CrudRepository<GoalData, String> {
     String recipientId,
     String widgetId
   );
+  List<GoalData> getByRecipientIdAndMode(String recipientId, GoalMode mode);
 }

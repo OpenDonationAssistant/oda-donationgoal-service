@@ -4,7 +4,9 @@ import static java.util.Optional.ofNullable;
 
 import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.commons.logging.ODALogger;
+import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInDefaultGoalCommand;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 @RabbitListener
 public class CommandListener {
@@ -58,38 +61,36 @@ public class CommandListener {
       case "CountPaymentInSpecifiedGoalCommand":
         var specifiedGoalCommand = ObjectMapper.getDefault()
           .readValue(payload, CountPaymentInSpecifiedGoalCommand.class);
-        ofNullable(specifiedGoalCommand)
-          .flatMap(command -> {
-            return ofNullable(command.goalId())
-              .flatMap(repository::getById)
-              .map(goal ->
-                ofNullable(command.amount())
-                  .map(amount ->
-                    goal.add(amount, "payment", command.paymentId())
-                  )
-                  .orElse(goal)
-                  .asUpdatedGoal()
-              );
-          })
-          .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
+        ofNullable(specifiedGoalCommand).ifPresent(command ->
+          ofNullable(command.goalId())
+            .flatMap(repository::getById)
+            .ifPresent(goal ->
+              countPayment(goal, command.amount(), command.paymentId())
+            )
+        );
         break;
       case "CountPaymentInDefaultGoalCommand":
         var defaultGoalCommand = ObjectMapper.getDefault()
           .readValue(payload, CountPaymentInDefaultGoalCommand.class);
-        ofNullable(defaultGoalCommand)
-          .flatMap(command ->
-            ofNullable(command.recipientId())
-              .flatMap(repository::getDefaultGoal)
-              .map(goal -> {
-                return ofNullable(command.amount())
-                  .map(amount ->
-                    goal.add(amount, "payment", command.paymentId())
-                  )
-                  .orElse(goal)
-                  .asUpdatedGoal();
-              })
-          )
-          .ifPresent(goal -> goalSender.sendGoal(Stage.AFTER_PAYMENT, goal));
+        ofNullable(defaultGoalCommand).ifPresent(command ->
+          ofNullable(command.recipientId())
+            .flatMap(repository::getDefaultGoal)
+            .ifPresent(goal ->
+              countPayment(goal, command.amount(), command.paymentId())
+            )
+        );
+        break;
+      case "CountPaymentInGoalWithModeAll":
+        var allModeCommand = ObjectMapper.getDefault()
+          .readValue(payload, CountPaymentInGoalWithModeAll.class);
+        ofNullable(allModeCommand).ifPresent(command ->
+          ofNullable(command.recipientId())
+            .map(recipientId -> repository.listByMode(recipientId, GoalMode.ALL))
+            .orElse(List.of())
+            .forEach(goal ->
+              countPayment(goal, command.amount(), command.paymentId())
+            )
+        );
         break;
       case "SetDefaultGoalAmount":
         var setAmountCommand = ObjectMapper.getDefault()
@@ -130,8 +131,9 @@ public class CommandListener {
               );
             });
           ofNullable(item.originId())
-            .flatMap(linkRepository::getByOriginId)
-            .ifPresent(link -> {
+            .map(linkRepository::getAllByOriginId)
+            .orElse(List.of())
+            .forEach(link -> {
               log.info(
                 "Deleting goal link for deleted history item",
                 Map.of("linkId", link.id(), "originId", item.originId())
@@ -145,6 +147,25 @@ public class CommandListener {
         break;
     }
   }
+
+  private void countPayment(
+    Goal goal,
+    @Nullable Amount amount,
+    @Nullable String paymentId
+  ) {
+    var updated = ofNullable(amount)
+      .map(it -> goal.add(it, "payment", paymentId))
+      .orElse(goal)
+      .asUpdatedGoal();
+    goalSender.sendGoal(Stage.AFTER_PAYMENT, updated);
+  }
+
+  @Serdeable
+  public static record CountPaymentInGoalWithModeAll(
+    String paymentId,
+    @Nullable String recipientId,
+    Amount amount
+  ) {}
 
   @Serdeable
   public static record SetDefaultGoalAmount(
