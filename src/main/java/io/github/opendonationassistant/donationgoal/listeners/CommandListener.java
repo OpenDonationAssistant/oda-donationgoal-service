@@ -34,7 +34,22 @@ public class CommandListener {
   public static final io.github.opendonationassistant.rabbit.Queue QUEUE =
     new io.github.opendonationassistant.rabbit.Queue(QUEUE_NAME);
   public static final List<Exchange> BINDING = List.of(
-    Exchange.Exchange("goals", Map.of(Key.COMMAND, QUEUE))
+    Exchange.Exchange("goals", Map.of(Key.COMMAND, QUEUE)),
+    Exchange.Exchange(
+      "commands",
+      Map.of(
+        "command.CountPaymentInSpecifiedGoalCommand",
+        QUEUE,
+        "command.CountPaymentInDefaultGoalCommand",
+        QUEUE,
+        "command.SetDefaultGoalAmount",
+        QUEUE,
+        "command.CountPaymentInGoalWithModeAll",
+        QUEUE,
+        "command.DeletedHistoryItem",
+        QUEUE
+      )
+    )
   );
 
   private final ODALogger log = new ODALogger(this);
@@ -85,7 +100,8 @@ public class CommandListener {
           .readValue(payload, CountPaymentInGoalWithModeAll.class);
         ofNullable(allModeCommand).ifPresent(command ->
           ofNullable(command.recipientId())
-            .map(recipientId -> repository.listByMode(recipientId, GoalMode.ALL))
+            .map(recipientId -> repository.listByMode(recipientId, GoalMode.ALL)
+            )
             .orElse(List.of())
             .forEach(goal ->
               countPayment(goal, command.amount(), command.paymentId())
