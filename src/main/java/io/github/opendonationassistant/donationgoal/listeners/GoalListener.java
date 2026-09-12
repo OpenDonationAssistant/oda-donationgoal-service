@@ -152,37 +152,36 @@ public class GoalListener {
     );
 
     // обновление конфига страницы — skip for "all" mode
-    if (goalMode != GoalMode.ALL) {
-      savedGoals = savedGoals
-        .stream()
-        .filter(goal -> goal.data().enabled())
-        .toList();
-      // TODO fix nullable goals
-      configCommandSender.send(
-        new ConfigCommand.PutKeyValue(
-          update.recipientId(),
-          "paymentpage",
-          "goals",
-          savedGoals
-            .stream()
-            .map(Goal::data)
-            .map(data -> {
-              var map = new HashMap<String, Object>();
-              map.put("id", data.id());
-              map.put("recipientId", data.recipientId());
-              map.put("widgetId", data.widgetId());
-              map.put("briefDescription", data.briefDescription());
-              map.put("fullDescription", data.fullDescription());
-              map.put("accumulatedAmount", data.accumulatedAmount());
-              map.put("requiredAmount", data.requiredAmount());
-              map.put("enabled", data.enabled());
-              map.put("isDefault", data.mode() == GoalMode.DEFAULT);
-              return map;
-            })
-            .toList()
-        )
-      );
-    }
+    savedGoals = savedGoals
+      .stream()
+      .filter(goal -> goal.data().enabled())
+      .filter(goal -> goal.data().mode() != GoalMode.ALL)
+      .toList();
+    // TODO fix nullable goals
+    configCommandSender.send(
+      new ConfigCommand.PutKeyValue(
+        update.recipientId(),
+        "paymentpage",
+        "goals",
+        savedGoals
+          .stream()
+          .map(Goal::data)
+          .map(data -> {
+            var map = new HashMap<String, Object>();
+            map.put("id", data.id());
+            map.put("recipientId", data.recipientId());
+            map.put("widgetId", data.widgetId());
+            map.put("briefDescription", data.briefDescription());
+            map.put("fullDescription", data.fullDescription());
+            map.put("accumulatedAmount", data.accumulatedAmount());
+            map.put("requiredAmount", data.requiredAmount());
+            map.put("enabled", data.enabled());
+            map.put("isDefault", data.mode() == GoalMode.DEFAULT);
+            return map;
+          })
+          .toList()
+      )
+    );
 
     // TODO: send 1 message instead of 3 ( maybe use WidgetChangedNotification)
     // TODO: reload would be done without it, is it needed?
