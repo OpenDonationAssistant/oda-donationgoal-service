@@ -16,7 +16,6 @@ import io.github.opendonationassistant.events.history.event.GoalHistoryEvent;
 import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.ObjectMapper;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 import org.instancio.Instancio;
 import org.instancio.Model;

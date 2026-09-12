@@ -6,12 +6,16 @@ import io.github.opendonationassistant.donationgoal.listeners.EventsListener;
 import io.github.opendonationassistant.donationgoal.listeners.GoalListener;
 import io.github.opendonationassistant.rabbit.AMQPConfiguration;
 import io.github.opendonationassistant.rabbit.Exchange;
+import io.github.opendonationassistant.rabbit.RabbitClient;
 import io.micronaut.context.ApplicationContextBuilder;
 import io.micronaut.context.ApplicationContextConfigurer;
 import io.micronaut.context.annotation.ContextConfigurer;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.rabbitmq.connect.ChannelInitializer;
+import io.micronaut.rabbitmq.connect.ChannelPool;
 import io.micronaut.runtime.Micronaut;
+import io.micronaut.serde.ObjectMapper;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 
@@ -36,6 +40,12 @@ public class Application {
     exchanges.addAll(EventsListener.BINDING);
     exchanges.addAll(CommandListener.BINDING);
     return new AMQPConfiguration(exchanges);
+  }
+
+  @Singleton
+  @Named("commands")
+  public RabbitClient commandsFacade(ChannelPool pool, ObjectMapper mapper) {
+    return new RabbitClient(pool, mapper, "commands");
   }
 
   public static void main(String[] args) {

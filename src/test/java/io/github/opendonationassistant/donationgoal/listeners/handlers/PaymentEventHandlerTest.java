@@ -7,6 +7,7 @@ import io.github.opendonationassistant.commons.Amount;
 import io.github.opendonationassistant.events.goal.GoalFacade;
 import io.github.opendonationassistant.events.goal.GoalFacade.CountPaymentInSpecifiedGoalCommand;
 import io.github.opendonationassistant.events.payments.PaymentEvent;
+import io.github.opendonationassistant.rabbit.RabbitClient;
 import io.micronaut.serde.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
@@ -23,10 +24,12 @@ public class PaymentEventHandlerTest {
 
   private final ObjectMapper mapper = ObjectMapper.getDefault();
   private final GoalFacade facade = mock(GoalFacade.class);
+  private final RabbitClient commandsFacade = mock(RabbitClient.class);
 
   private final PaymentEventHandler handler = new PaymentEventHandler(
     mapper,
-    facade
+    facade,
+    commandsFacade
   );
 
   Model<PaymentEvent> paymentEventModel = Instancio.of(PaymentEvent.class)
