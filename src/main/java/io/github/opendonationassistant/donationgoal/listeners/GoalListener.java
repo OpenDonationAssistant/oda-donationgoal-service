@@ -4,8 +4,8 @@ import io.github.opendonationassistant.commons.logging.ODALogger;
 import io.github.opendonationassistant.donationgoal.repository.Goal;
 import io.github.opendonationassistant.donationgoal.repository.GoalData;
 import io.github.opendonationassistant.donationgoal.repository.GoalDataRepository;
-import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalLinkRepository;
+import io.github.opendonationassistant.donationgoal.repository.GoalMode;
 import io.github.opendonationassistant.donationgoal.repository.GoalRepository;
 import io.github.opendonationassistant.events.config.ConfigCommand;
 import io.github.opendonationassistant.events.config.ConfigCommandSender;
@@ -22,6 +22,7 @@ import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
 import jakarta.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -162,7 +163,23 @@ public class GoalListener {
           update.recipientId(),
           "paymentpage",
           "goals",
-          savedGoals.stream().map(Goal::data).toList()
+          savedGoals
+            .stream()
+            .map(Goal::data)
+            .map(data -> {
+              var map = new HashMap<String, Object>();
+              map.put("id", data.id());
+              map.put("recipientId", data.recipientId());
+              map.put("widgetId", data.widgetId());
+              map.put("briefDescription", data.briefDescription());
+              map.put("fullDescription", data.fullDescription());
+              map.put("accumulatedAmount", data.accumulatedAmount());
+              map.put("requiredAmount", data.requiredAmount());
+              map.put("enabled", data.enabled());
+              map.put("isDefault", data.mode() == GoalMode.DEFAULT);
+              return map;
+            })
+            .toList()
         )
       );
     }
