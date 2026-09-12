@@ -178,8 +178,8 @@ public class Goal {
       this.data.accumulatedAmount(),
       "requiredAmount",
       this.data.requiredAmount(),
-      "mode",
-      this.data.mode().name().toLowerCase()
+      "default",
+      this.data.mode() == GoalMode.DEFAULT
     );
   }
 
