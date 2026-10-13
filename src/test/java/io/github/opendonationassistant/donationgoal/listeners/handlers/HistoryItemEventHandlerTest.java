@@ -17,6 +17,7 @@ import io.github.opendonationassistant.events.history.event.HistoryItemEvent;
 import io.micronaut.serde.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import org.instancio.Instancio;
 import org.instancio.Model;
 import org.instancio.junit.InstancioExtension;
@@ -29,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 public class HistoryItemEventHandlerTest {
 
   private static final String WIDGET_ID = "test-widget-id";
+  private static final Amount REQUIRED_AMOUNT = new Amount(1000, 0, "RUB");
 
   private final ObjectMapper mapper = ObjectMapper.getDefault();
   private final GoalRepository repository = mock(GoalRepository.class);
@@ -58,7 +60,7 @@ public class HistoryItemEventHandlerTest {
       briefDescription,
       "Full description",
       new Amount(100, 0, "RUB"),
-      new Amount(1000, 0, "RUB"),
+      REQUIRED_AMOUNT,
       true,
       mode
     );
@@ -102,7 +104,8 @@ public class HistoryItemEventHandlerTest {
           originId.equals(e.originId()) &&
           WIDGET_ID.equals(e.widgetId()) &&
           goalId.equals(e.goalId()) &&
-          briefDescription.equals(e.title())
+          briefDescription.equals(e.title()) &&
+          Objects.equals(REQUIRED_AMOUNT, e.requiredAmount())
       )
     );
 

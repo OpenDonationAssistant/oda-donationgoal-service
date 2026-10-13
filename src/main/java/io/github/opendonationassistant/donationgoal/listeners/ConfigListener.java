@@ -8,6 +8,8 @@ import io.github.opendonationassistant.events.config.ConfigCommandSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoal;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
+import io.github.opendonationassistant.events.history.HistoryFacade;
+import io.github.opendonationassistant.events.history.event.GoalHistoryEvent;
 import io.github.opendonationassistant.events.widget.Widget;
 import io.github.opendonationassistant.events.widget.WidgetChangedEvent;
 import io.github.opendonationassistant.rabbit.Exchange;
@@ -37,16 +39,19 @@ public class ConfigListener {
   private final GoalRepository repository;
   private final ConfigCommandSender configCommandSender;
   private final UpdatedGoalSender updatedGoalSender;
+  private final HistoryFacade historyFacade;
 
   @Inject
   public ConfigListener(
     GoalRepository repository,
     ConfigCommandSender configCommandSender,
-    UpdatedGoalSender updatedGoalSender
+    UpdatedGoalSender updatedGoalSender,
+    HistoryFacade historyFacade
   ) {
     this.repository = repository;
     this.configCommandSender = configCommandSender;
     this.updatedGoalSender = updatedGoalSender;
+    this.historyFacade = historyFacade;
   }
 
   @Queue(QUEUE_NAME)
@@ -84,7 +89,12 @@ public class ConfigListener {
         .forEach(property -> {
           if ("goal".equals(property.name())) {
             var goals = (List<Map<String, Object>>) property.value();
-            updatedGoals.addAll(convert(widget, goals));
+            var convertedGoals = convert(widget, goals);
+            convertedGoals.forEach(goal -> {
+              sendGoalHistoryEvent(event.type(), goal);
+              updatedGoalSender.sendGoal(Stage.SYNCED, goal.asUpdatedGoal());
+            });
+            updatedGoals.addAll(convertedGoals);
           }
         });
       log.info("Configuration changed", Map.of("goals", updatedGoals));
@@ -139,9 +149,23 @@ public class ConfigListener {
           .orElseGet(() -> repository.create(widget.ownerId(), widget.id(), id))
           .update(widget.enabled(), config);
         // TODO: batch
-        updatedGoalSender.sendGoal(Stage.SYNCED, updated.asUpdatedGoal());
         return updated.save();
       })
       .toList();
+  }
+
+  private void sendGoalHistoryEvent(String source, Goal goal) {
+    historyFacade.sendEvent(
+      new GoalHistoryEvent(
+        source,
+        null,
+        goal.data().recipientId(),
+        goal.data().widgetId(),
+        goal.data().id(),
+        Optional.ofNullable(goal.data().briefDescription()).orElse(""),
+        goal.data().accumulatedAmount(),
+        goal.data().requiredAmount()
+      )
+    );
   }
 }

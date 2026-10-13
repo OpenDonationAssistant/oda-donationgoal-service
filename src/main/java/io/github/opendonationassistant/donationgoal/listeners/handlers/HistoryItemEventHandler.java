@@ -57,7 +57,8 @@ public class HistoryItemEventHandler
         goal.data().widgetId(),
         goal.data().id(),
         Optional.ofNullable(goal.data().briefDescription()).orElse(""),
-        goal.data().accumulatedAmount()
+        goal.data().accumulatedAmount(),
+        goal.data().requiredAmount()
       )
     );
   }

@@ -14,7 +14,6 @@ import io.github.opendonationassistant.events.goal.UpdatedGoalSender;
 import io.github.opendonationassistant.events.goal.UpdatedGoalSender.Stage;
 import io.github.opendonationassistant.events.history.event.DeletedHistoryItem;
 import io.github.opendonationassistant.rabbit.Exchange;
-import io.github.opendonationassistant.rabbit.Key;
 import io.micronaut.messaging.annotation.MessageHeader;
 import io.micronaut.rabbitmq.annotation.Queue;
 import io.micronaut.rabbitmq.annotation.RabbitListener;
@@ -34,7 +33,7 @@ public class CommandListener {
   public static final io.github.opendonationassistant.rabbit.Queue QUEUE =
     new io.github.opendonationassistant.rabbit.Queue(QUEUE_NAME);
   public static final List<Exchange> BINDING = List.of(
-    Exchange.Exchange("goals", Map.of(Key.COMMAND, QUEUE)),
+    Exchange.Exchange(Exchange.GOALS, Map.of("command", QUEUE)),
     Exchange.Exchange(
       "commands",
       Map.of(
