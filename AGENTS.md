@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Java 25 / Micronaut 5.1.0 microservice managing donation goals for streamers. **Purely event-driven** — no HTTP controllers. All I/O flows through RabbitMQ queues. Part of the Open Donation Assistant ecosystem.
+Java 25 / Micronaut 5.2.5 microservice managing donation goals for streamers. **Purely event-driven** — no HTTP controllers. All I/O flows through RabbitMQ queues. Part of the Open Donation Assistant ecosystem.
 
 ## Build & Test Commands
 
