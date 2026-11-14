@@ -112,7 +112,7 @@ RabbitMQ queues → Listeners → EventHandlers → Facades (from oda-rabbit-con
 
 ## Context Sources
 
-- ODA libraries: `io.github.opendonationassistant:oda-rabbit-conf:${oda.version}` (0.11.232)
+- ODA libraries: `io.github.opendonationassistant:oda-rabbit-conf`
 - Reusable CI workflows: `OpenDonationAssistant/oda-libraries/.github/workflows/`
 - Docker image: `ghcr.io/opendonationassistant/oda-donationgoal-service`
 
